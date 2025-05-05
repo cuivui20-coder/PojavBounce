@@ -139,6 +139,8 @@ val ALL_EVENT_CLASSES: Array<KClass<out Event>> = arrayOf(
     QueuePacketEvent::class,
     MinecraftAutoJumpEvent::class,
     WorldEntityRemoveEvent::class,
+    UserLoggedInEvent::class,
+    UserLoggedOutEvent::class,
 )
 
 /**
