@@ -27,6 +27,7 @@ import com.mojang.blaze3d.systems.RenderSystem
 import io.netty.handler.codec.http.FullHttpResponse
 import net.ccbluex.liquidbounce.config.gson.interopGson
 import net.ccbluex.liquidbounce.config.gson.util.emptyJsonObject
+import net.ccbluex.liquidbounce.features.misc.proxy.LiquidProxy
 import net.ccbluex.liquidbounce.features.misc.proxy.Proxy
 import net.ccbluex.liquidbounce.features.misc.proxy.ProxyManager
 import net.ccbluex.liquidbounce.utils.client.mc
@@ -217,3 +218,7 @@ fun deleteFavoriteProxy(requestObject: RequestObject): FullHttpResponse {
     ProxyManager.unfavoriteProxy(body.id)
     return httpOk(emptyJsonObject())
 }
+
+// GET /api/v1/liquidproxy/locations
+@Suppress("UNUSED_PARAMETER")
+fun getProxyLocations(requestObject: RequestObject) = httpOk(interopGson.toJsonTree(LiquidProxy.locations))
