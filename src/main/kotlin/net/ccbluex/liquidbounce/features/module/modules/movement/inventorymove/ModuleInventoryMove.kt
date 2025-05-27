@@ -96,11 +96,13 @@ object ModuleInventoryMove : ClientModule("InventoryMove", Category.MOVEMENT) {
 
     @Suppress("unused")
     private val keyHandler = handler<KeyboardKeyEvent> { event ->
-        val key = movementKeys.keys.find { it.matchesKey(event.keyCode, event.scanCode) } ?: return@handler
+        val key = movementKeys.keys.find { it.matchesKey(event.keyCode, event.scanCode) }
+            ?: return@handler
         val pressed = shouldHandleInputs(key) && event.action != GLFW.GLFW_RELEASE
         movementKeys[key] = pressed
 
-        if (behavior == Behaviour.SAFE && isInInventoryScreen && InventoryManager.isInventoryOpenServerSide && pressed) {
+        if (behavior == Behaviour.SAFE && isInInventoryScreen && InventoryManager.isInventoryOpenServerSide
+            && pressed) {
             closeInventorySilently()
         }
     }
