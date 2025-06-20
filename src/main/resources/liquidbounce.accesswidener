@@ -191,3 +191,7 @@ accessible method net/minecraft/client/gui/screen/multiplayer/ConnectScreen conn
 accessible method net/minecraft/client/gui/screen/multiplayer/ConnectScreen setStatus (Lnet/minecraft/text/Text;)V
 
 accessible method net/minecraft/client/network/PlayerListEntry texturesSupplier (Lcom/mojang/authlib/GameProfile;)Ljava/util/function/Supplier;
+
+accessible field net/minecraft/client/option/ServerList servers Ljava/util/List;
+
+accessible field net/minecraft/client/input/Input movementVector Lnet/minecraft/util/math/Vec2f;

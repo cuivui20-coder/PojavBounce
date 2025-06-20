@@ -35,7 +35,6 @@
     "minecraft.client.MixinWorld",
     "minecraft.client.network.MixinCommonNetworkHandler",
     "minecraft.client.network.message.MixinMessageHandler",
-    "minecraft.client.option.MixinServerListAccessor",
     "minecraft.entity.MixinAbstractClientPlayerEntity",
     "minecraft.entity.MixinAbstractHorseEntity",
     "minecraft.entity.MixinArmorFeatureRenderer",
@@ -47,12 +46,14 @@
     "minecraft.entity.MixinHeadFeatureRenderer",
     "minecraft.entity.MixinLivingEntity",
     "minecraft.entity.MixinLivingEntityCompatibility",
+    "minecraft.entity.MixinMobEntity",
     "minecraft.entity.MixinMobSpawnerBlockEntityRenderer",
     "minecraft.entity.MixinPlayerEntity",
     "minecraft.entity.MixinPlayerEntityAccessor",
     "minecraft.entity.projectile.MixinFireworkRocketEntity",
     "minecraft.entity.projectile.MixinFishingBobberEntity",
     "minecraft.fluid.MixinFlowableFluid",
+    "minecraft.gui.MixinBar",
     "minecraft.gui.MixinBossBarHud",
     "minecraft.gui.MixinChatHud",
     "minecraft.gui.MixinChatHudAccessor",
@@ -60,6 +61,7 @@
     "minecraft.gui.MixinChatScreen",
     "minecraft.gui.MixinChatScreenAccessor",
     "minecraft.gui.MixinDrawContext",
+    "minecraft.gui.MixinExperienceBar",
     "minecraft.gui.MixinHandledScreen",
     "minecraft.gui.MixinInGameHud",
     "minecraft.gui.MixinPlayerListHud",
@@ -132,5 +134,8 @@
   "server": [],
   "injectors": {
     "defaultRequire": 1
-  }
+  },
+  "mixins": [
+    "minecraft.item.MixinItemSettings"
+  ]
 }

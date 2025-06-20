@@ -126,25 +126,6 @@ public abstract class MixinInGameHud {
         }
     }
 
-    @WrapOperation(method = "renderCrosshair", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/DrawContext;drawGuiTexture(Ljava/util/function/Function;Lnet/minecraft/util/Identifier;IIII)V", ordinal = 0))
-    private void centerCrosshair(DrawContext drawContext, Function<Identifier, RenderLayer> renderLayers, Identifier sprite, int x, int y, int width, int height, Operation<Void> original) {
-        if (!ModuleHud.INSTANCE.getCenteredCrosshair()) {
-            original.call(drawContext, renderLayers, sprite, x, y, width, height);
-            return;
-        }
-
-        Window window = MinecraftClient.getInstance().getWindow();
-        double scaleFactor = window.getScaleFactor();
-        double scaledCenterX = (window.getFramebufferWidth() / scaleFactor) / 2.0;
-        double scaledCenterY = (window.getFramebufferHeight() / scaleFactor) / 2.0;
-        ((DrawContextAddition) drawContext).liquid_bounce$drawTexture(
-                renderLayers, sprite,
-                Math.round((scaledCenterX - 7.5) * 4.0) * 0.25f,
-                Math.round((scaledCenterY - 7.5) * 4.0) * 0.25f,
-                width, height
-        );
-    }
-
     @Inject(method = "renderPortalOverlay", at = @At("HEAD"), cancellable = true)
     private void hookRenderPortalOverlay(CallbackInfo ci) {
         if (!ModuleAntiBlind.canRender(DoRender.PORTAL_OVERLAY)) {
@@ -170,20 +151,6 @@ public abstract class MixinInGameHud {
     @Inject(method = "renderStatusBars", at = @At("HEAD"), cancellable = true)
     private void hookRenderStatusBars(CallbackInfo ci) {
         if (ComponentOverlay.isTweakEnabled(FeatureTweak.DISABLE_STATUS_BAR)) {
-            ci.cancel();
-        }
-    }
-
-    @Inject(method = "renderExperienceBar", at = @At("HEAD"), cancellable = true)
-    private void hookRenderExperienceBar(CallbackInfo ci) {
-        if (ComponentOverlay.isTweakEnabled(FeatureTweak.DISABLE_EXP_BAR)) {
-            ci.cancel();
-        }
-    }
-
-    @Inject(method = "renderExperienceLevel", at = @At("HEAD"), cancellable = true)
-    private void hookRenderExperienceLevel(CallbackInfo ci) {
-        if (ComponentOverlay.isTweakEnabled(FeatureTweak.DISABLE_EXP_BAR)) {
             ci.cancel();
         }
     }

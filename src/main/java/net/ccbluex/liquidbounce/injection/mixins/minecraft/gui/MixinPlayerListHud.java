@@ -112,7 +112,7 @@ public abstract class MixinPlayerListHud {
         return ModuleBetterTab.isVisible(Visibility.NAME_ONLY) ? Text.of(entry.getProfile().getName()) : original;
     }
 
-    @Inject(method = "render", at = @At(value = "INVOKE", target = "Ljava/lang/Math;min(II)I", shift = At.Shift.BEFORE))
+    @Inject(method = "render", at = @At(value = "INVOKE", target = "Ljava/lang/Math;min(II)I"))
     private void hookTabColumnHeight(CallbackInfo ci, @Local(ordinal = 5) LocalIntRef o, @Local(ordinal = 6) LocalIntRef p) {
         if (!ModuleBetterTab.INSTANCE.getRunning()) {
             return;

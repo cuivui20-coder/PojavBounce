@@ -31,7 +31,6 @@ import net.ccbluex.liquidbounce.event.EventListener
 import net.ccbluex.liquidbounce.event.events.GameTickEvent
 import net.ccbluex.liquidbounce.event.events.ScreenEvent
 import net.ccbluex.liquidbounce.event.handler
-import net.ccbluex.liquidbounce.injection.mixins.minecraft.client.option.MixinServerListAccessor
 import net.ccbluex.liquidbounce.integration.interop.protocol.rest.v1.game.ActiveServerList.pingThemAll
 import net.ccbluex.liquidbounce.integration.interop.protocol.rest.v1.game.ActiveServerList.serverList
 import net.ccbluex.liquidbounce.utils.client.logger
@@ -245,8 +244,5 @@ object ActiveServerList : EventListener {
     override val running = true
 
 }
-
-val ServerList.servers: List<ServerInfo>
-    get() = (this as MixinServerListAccessor).`liquid_bounce$getServers`()
 
 fun ServerList.getByAddress(address: String) = servers.firstOrNull { it.address == address }

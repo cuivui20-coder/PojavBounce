@@ -46,7 +46,7 @@ public class MixinMouse {
     /**
      * Hook mouse button event
      */
-    @Inject(method = "onMouseButton", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/MinecraftClient;getOverlay()Lnet/minecraft/client/gui/screen/Overlay;", shift = At.Shift.BEFORE, ordinal = 0))
+    @Inject(method = "onMouseButton", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/MinecraftClient;getOverlay()Lnet/minecraft/client/gui/screen/Overlay;", ordinal = 0))
     private void hookMouseButton(long window, int button, int action, int mods, CallbackInfo callbackInfo) {
         EventManager.INSTANCE.callEvent(new MouseButtonEvent(
                 InputUtil.Type.MOUSE.createFromCode(button),
@@ -60,12 +60,12 @@ public class MixinMouse {
     /**
      * Hook mouse scroll event
      */
-    @Inject(method = "onMouseScroll", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/MinecraftClient;getOverlay()Lnet/minecraft/client/gui/screen/Overlay;", shift = At.Shift.BEFORE, ordinal = 0))
+    @Inject(method = "onMouseScroll", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/MinecraftClient;getOverlay()Lnet/minecraft/client/gui/screen/Overlay;", ordinal = 0))
     private void hookMouseScroll(long window, double horizontal, double vertical, CallbackInfo callbackInfo) {
         EventManager.INSTANCE.callEvent(new MouseScrollEvent(horizontal, vertical));
     }
 
-    @Inject(method = "onMouseScroll", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/network/ClientPlayerEntity;isSpectator()Z", shift = At.Shift.BEFORE), cancellable = true)
+    @Inject(method = "onMouseScroll", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/network/ClientPlayerEntity;isSpectator()Z"), cancellable = true)
     private void hookMouseScroll(long window, double horizontal, double vertical, CallbackInfo ci, @Local(ordinal = 0) int i) {
         if (EventManager.INSTANCE.callEvent(new MouseScrollInHotbarEvent(i)).isCancelled()) {
             ci.cancel();
@@ -75,7 +75,7 @@ public class MixinMouse {
     /**
      * Hook mouse cursor event
      */
-    @Inject(method = "onCursorPos", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/MinecraftClient;isWindowFocused()Z", shift = At.Shift.BEFORE, ordinal = 0))
+    @Inject(method = "onCursorPos", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/MinecraftClient;isWindowFocused()Z", ordinal = 0))
     private void hookCursorPos(long window, double x, double y, CallbackInfo callbackInfo) {
         EventManager.INSTANCE.callEvent(new MouseCursorEvent(x, y));
     }

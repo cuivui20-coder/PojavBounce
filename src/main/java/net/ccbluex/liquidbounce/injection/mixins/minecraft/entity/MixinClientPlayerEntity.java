@@ -49,6 +49,8 @@ import net.minecraft.client.network.ClientPlayerEntity;
 import net.minecraft.entity.MovementType;
 import net.minecraft.network.packet.c2s.play.HandSwingC2SPacket;
 import net.minecraft.util.Hand;
+import net.minecraft.util.PlayerInput;
+import net.minecraft.util.math.Vec2f;
 import net.minecraft.util.math.Vec3d;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
@@ -89,7 +91,6 @@ public abstract class MixinClientPlayerEntity extends MixinPlayerEntity implemen
      */
     @Inject(method = "tick", at = @At(value = "INVOKE",
             target = "Lnet/minecraft/client/network/AbstractClientPlayerEntity;tick()V",
-            shift = At.Shift.BEFORE,
             ordinal = 0),
             cancellable = true)
     private void hookTickEvent(CallbackInfo ci) {
@@ -234,7 +235,7 @@ public abstract class MixinClientPlayerEntity extends MixinPlayerEntity implemen
     /**
      * Hook custom sneaking multiplier
      */
-    @ModifyExpressionValue(method = "tickMovement", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/network/ClientPlayerEntity;getAttributeValue(Lnet/minecraft/registry/entry/RegistryEntry;)D"))
+    @ModifyExpressionValue(method = "applyMovementSpeedFactors", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/network/ClientPlayerEntity;getAttributeValue(Lnet/minecraft/registry/entry/RegistryEntry;)D"))
     private double hookCustomSneakingMultiplier(double original) {
         var playerSneakMultiplier = new PlayerSneakMultiplier(original);
         EventManager.INSTANCE.callEvent(playerSneakMultiplier);
@@ -248,14 +249,16 @@ public abstract class MixinClientPlayerEntity extends MixinPlayerEntity implemen
     private void hookCustomMultiplier(CallbackInfo callbackInfo) {
         final Input input = this.input;
         // reverse
-        input.movementForward /= 0.2f;
-        input.movementSideways /= 0.2f;
+        input.movementVector = input.movementVector.multiply(1 / 0.2F);
 
         // then
         final PlayerUseMultiplier playerUseMultiplier = new PlayerUseMultiplier(0.2f, 0.2f);
         EventManager.INSTANCE.callEvent(playerUseMultiplier);
-        input.movementForward *= playerUseMultiplier.getForward();
-        input.movementSideways *= playerUseMultiplier.getSideways();
+
+        input.movementVector = new Vec2f(
+            input.getMovementInput().x * playerUseMultiplier.getSideways(),
+            input.getMovementInput().y * playerUseMultiplier.getForward()
+        );
     }
 
     /**
@@ -337,13 +340,14 @@ public abstract class MixinClientPlayerEntity extends MixinPlayerEntity implemen
         return ModuleSprint.INSTANCE.getShouldIgnoreHunger() ? -1F : constant;
     }
 
-    @ModifyExpressionValue(method = "tickMovement", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/option/KeyBinding;isPressed()Z"))
+    @ModifyExpressionValue(method = "tickMovement", at = @At(value = "INVOKE", target = "Lnet/minecraft/util/PlayerInput;sprint()Z"))
     private boolean hookSprintStart(boolean original) {
         var event = new SprintEvent(new DirectionalInput(input), original, SprintEvent.Source.MOVEMENT_TICK);
         EventManager.INSTANCE.callEvent(event);
         return event.getSprint();
     }
 
+    // TODO @1zuna
     @ModifyExpressionValue(method = "tickMovement", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/network/ClientPlayerEntity;canSprint()Z"))
     private boolean hookSprintStop(boolean original) {
         var event = new SprintEvent(new DirectionalInput(input), original, SprintEvent.Source.MOVEMENT_TICK);
@@ -356,22 +360,9 @@ public abstract class MixinClientPlayerEntity extends MixinPlayerEntity implemen
         return !ModuleSprint.INSTANCE.getShouldIgnoreBlindness() && original;
     }
 
-    @ModifyExpressionValue(method = "tickMovement", at = @At(value = "FIELD", target = "Lnet/minecraft/client/network/ClientPlayerEntity;horizontalCollision:Z"))
+    @ModifyExpressionValue(method = "shouldStopSprinting", at = @At(value = "FIELD", target = "Lnet/minecraft/client/network/ClientPlayerEntity;horizontalCollision:Z"))
     private boolean hookSprintIgnoreCollision(boolean original) {
         return !ModuleSprint.INSTANCE.getShouldIgnoreCollision() && original;
-    }
-
-    @ModifyReturnValue(method = "isWalking", at = @At("RETURN"))
-    private boolean hookIsWalking(boolean original) {
-        if (!ModuleSprint.INSTANCE.getShouldSprintOmnidirectional()) {
-            return original;
-        }
-
-        var hasMovement = Math.abs(input.movementForward) > 1.0E-5F ||
-                Math.abs(input.movementSideways) > 1.0E-5F;
-        var isWalking = (double) Math.abs(input.movementForward) >= 0.8 ||
-                (double) Math.abs(input.movementSideways) >= 0.8;
-        return this.isSubmergedInWater() ? hasMovement : isWalking;
     }
 
     @ModifyExpressionValue(method = "sendSprintingPacket", at = @At(
@@ -384,14 +375,33 @@ public abstract class MixinClientPlayerEntity extends MixinPlayerEntity implemen
         return event.getSprint();
     }
 
-    @ModifyExpressionValue(method = "sendSneakingPacket", at = @At(
-            value = "INVOKE",
-            target = "Lnet/minecraft/client/network/ClientPlayerEntity;isSneaking()Z")
-    )
-    private boolean hookNetworkSneak(boolean original) {
-        var event = new SneakNetworkEvent(new DirectionalInput(input), original);
+    @Unique
+    private PlayerInput currentNetworkPlayerInput;
+
+    @Inject(method = "tick", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/network/AbstractClientPlayerEntity;tick()V", shift = At.Shift.AFTER))
+    private void injectSneakNetworkEvent(CallbackInfo ci) {
+        var baseInput = this.input.playerInput;
+
+        var event = new SneakNetworkEvent(new DirectionalInput(input), baseInput.sneak());
         EventManager.INSTANCE.callEvent(event);
-        return event.getSneak();
+
+        this.currentNetworkPlayerInput = new PlayerInput(
+                baseInput.forward(),
+                baseInput.backward(),
+                baseInput.left(),
+                baseInput.right(),
+                baseInput.jump(),
+                event.getSneak(),
+                baseInput.sprint()
+        );
+    }
+
+    @ModifyExpressionValue(method = "tick", at = @At(
+            value = "FIELD",
+            target = "Lnet/minecraft/client/input/Input;playerInput:Lnet/minecraft/util/PlayerInput;")
+    )
+    private PlayerInput hookNetworkSneak(PlayerInput original) {
+        return this.currentNetworkPlayerInput;
     }
 
     @WrapWithCondition(method = "closeScreen", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/MinecraftClient;setScreen(Lnet/minecraft/client/gui/screen/Screen;)V"))

@@ -21,15 +21,19 @@ package net.ccbluex.liquidbounce.interfaces;
 import net.minecraft.item.equipment.ArmorMaterial;
 import net.minecraft.item.equipment.EquipmentType;
 
+import javax.annotation.Nullable;
+
 /**
- * Additions to {@link net.minecraft.item.ArmorItem}
+ * Additions to {@link net.minecraft.item.Item}
  */
 public interface ArmorItemAdditions {
 
     @SuppressWarnings("unused")
+    @Nullable
     ArmorMaterial liquid_bounce$getMaterial();
 
     @SuppressWarnings("unused")
+    @Nullable
     EquipmentType liquid_bounce$getType();
 
 }

@@ -210,7 +210,7 @@ public abstract class MixinGameRenderer {
         BlurEffectRenderer.INSTANCE.endOverlayDrawing();
     }
 
-    @Inject(method = "render", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/screen/Screen;renderWithTooltip(Lnet/minecraft/client/gui/DrawContext;IIF)V", shift = At.Shift.BEFORE))
+    @Inject(method = "render", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/screen/Screen;renderWithTooltip(Lnet/minecraft/client/gui/DrawContext;IIF)V"))
     private void hookBlurEffectEndAlternative(CallbackInfo ci) {
         if (!(client.currentScreen instanceof ChatScreen)) {
             BlurEffectRenderer.INSTANCE.endOverlayDrawing();

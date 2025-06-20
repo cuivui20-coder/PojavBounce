@@ -90,11 +90,14 @@ public abstract class MixinScreen {
     /**
      * Allows the execution of {@link RunnableClickEvent}.
      */
-    @Inject(method = "handleTextClick", at = @At(value = "INVOKE", target = "Lorg/slf4j/Logger;error(Ljava/lang/String;Ljava/lang/Object;)V", ordinal = 2, shift = At.Shift.BEFORE, remap = false), cancellable = true)
-    private void hookExecuteClickEvents(Style style, CallbackInfoReturnable<Boolean> cir, @Local ClickEvent clickEvent) {
+    @Inject(method = "handleBasicClickEvent", at = @At(value = "INVOKE", target = "Lorg/slf4j/Logger;error(Ljava/lang/String;Ljava/lang/Object;)V", remap = false), cancellable = true)
+    private static void hookExecuteClickEvents(ClickEvent clickEvent, MinecraftClient client, Screen screenAfterRun, CallbackInfo ci) {
         if (clickEvent instanceof RunnableClickEvent runnableClickEvent) {
             runnableClickEvent.run();
-            cir.setReturnValue(true);
+
+            if (client.currentScreen != screenAfterRun) {
+                client.setScreen(screenAfterRun);
+            }
         }
     }
 

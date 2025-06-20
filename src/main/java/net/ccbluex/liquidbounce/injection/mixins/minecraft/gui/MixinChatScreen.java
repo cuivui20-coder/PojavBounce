@@ -46,7 +46,7 @@ public abstract class MixinChatScreen extends MixinScreen {
     /**
      * We want to close the screen before sending the message to make sure it doesn't affect commands.
      */
-    @Inject(method = "keyPressed", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/screen/ChatScreen;sendMessage(Ljava/lang/String;Z)V", shift = At.Shift.BEFORE))
+    @Inject(method = "keyPressed", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/screen/ChatScreen;sendMessage(Ljava/lang/String;Z)V"))
     private void fixOrder(CallbackInfoReturnable<Boolean> callbackInfo) {
         this.client.setScreen(null);
     }

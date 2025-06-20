@@ -103,7 +103,7 @@ public abstract class MixinChatHud implements ChatHudAddition {
      * Modifies {@link ChatHud#addVisibleMessage(ChatHudLine)} so, that the id is
      * forwarded and if {@link ModuleBetterChat} is enabled, older lines won't be removed.
      */
-    @Inject(method = "addVisibleMessage", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/hud/ChatHud;isChatFocused()Z", shift = At.Shift.BEFORE), cancellable = true)
+    @Inject(method = "addVisibleMessage", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/hud/ChatHud;isChatFocused()Z"), cancellable = true)
     public void hookAddVisibleMessage(ChatHudLine message, CallbackInfo ci, @Local List<OrderedText> list) {
         var focused = isChatFocused();
         var removable = ChatMessageAddition.class.cast(message);

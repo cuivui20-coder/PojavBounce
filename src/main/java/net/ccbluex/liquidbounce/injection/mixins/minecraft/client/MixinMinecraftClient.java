@@ -205,10 +205,10 @@ public abstract class MixinMinecraftClient {
             if (protocolVersion != null) {
                 titleBuilder.append(protocolVersion.getName());
             } else {
-                titleBuilder.append(SharedConstants.getGameVersion().getName());
+                titleBuilder.append(SharedConstants.getGameVersion().name());
             }
         } else {
-            titleBuilder.append(SharedConstants.getGameVersion().getName());
+            titleBuilder.append(SharedConstants.getGameVersion().name());
         }
 
         ClientPlayNetworkHandler clientPlayNetworkHandler = this.getNetworkHandler();
@@ -283,7 +283,7 @@ public abstract class MixinMinecraftClient {
         EventManager.INSTANCE.callEvent(GameRenderTaskQueueEvent.INSTANCE);
     }
 
-    @Inject(method = "render", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/MinecraftClient;runTasks()V", shift = At.Shift.BEFORE))
+    @Inject(method = "render", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/MinecraftClient;runTasks()V"))
     private void hookPacketProcess(CallbackInfo callbackInfo) {
         EventManager.INSTANCE.callEvent(TickPacketProcessEvent.INSTANCE);
     }
@@ -388,7 +388,7 @@ public abstract class MixinMinecraftClient {
      * Alternative input handler of [handleInputEvents] while being inside a client-side screen.
      * @param ci
      */
-    @Inject(method = "tick", at = @At(value = "FIELD", target = "Lnet/minecraft/client/MinecraftClient;currentScreen:Lnet/minecraft/client/gui/screen/Screen;", ordinal = 4, shift = At.Shift.BEFORE), locals = LocalCapture.CAPTURE_FAILSOFT)
+    @Inject(method = "tick", at = @At(value = "FIELD", target = "Lnet/minecraft/client/MinecraftClient;currentScreen:Lnet/minecraft/client/gui/screen/Screen;", ordinal = 4), locals = LocalCapture.CAPTURE_FAILSOFT)
     private void passthroughInputHandler(CallbackInfo ci, @Local Profiler profiler) {
         if (this.overlay == null && this.player != null && this.world != null && isAClientScreen(this.currentScreen)) {
             profiler.swap("Keybindings");
