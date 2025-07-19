@@ -16,8 +16,6 @@
 <div class="item" on:click={() => dispatch("toggle", {enabled: !enabled, value:value})}>
     {#if icon}
         <img class="icon" src="{icon}" alt={value}/>
-    {:else}
-        <!-- Fallback icon? -->
     {/if}
     <div class="name">{name}</div>
     <div class="tick">
@@ -39,6 +37,7 @@
     column-gap: 5px;
     cursor: pointer;
     margin: 2px 5px 2px 0;
+    height: 25px;
   }
 
   .icon {
