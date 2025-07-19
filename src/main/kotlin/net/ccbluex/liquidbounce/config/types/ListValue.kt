@@ -135,7 +135,7 @@ open class RegistryListValue<T : MutableSet<E>, E>(
      * The registry type, which is either "blocks" or "items".
      * This is used to determine the registry endpoint for the API.
      */
-    var registry: String = when (innerValueType) {
+    @Exclude var registry: String = when (innerValueType) {
         ValueType.BLOCK -> "blocks"
         ValueType.ITEM -> "items"
         ValueType.SOUND -> "sounds"
