@@ -166,6 +166,7 @@ export interface ListSetting {
     name: string;
     value: string[];
     innerValueType: string;
+    registry: string | undefined;
 }
 
 export interface ConfigurableSetting {
@@ -426,4 +427,5 @@ export interface Screen {
 
 export interface RegistryItem {
     name: string;
+    icon: string | undefined;
 }

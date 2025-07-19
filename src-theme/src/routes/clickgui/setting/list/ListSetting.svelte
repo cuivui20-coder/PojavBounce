@@ -1,5 +1,5 @@
 <script lang="ts">
-    import {createEventDispatcher, onDestroy, onMount} from "svelte";
+    import {createEventDispatcher, onMount} from "svelte";
     import {slide} from "svelte/transition";
     import type {ListSetting, ModuleSetting, RegistryItem} from "../../../../integration/types";
     import VirtualList from "../list/VirtualList.svelte";
@@ -8,7 +8,6 @@
     import {setItem} from "../../../../integration/persistent_storage";
     import ListItem from "./ListItem.svelte";
     import {getRegistryItems} from "../../../../integration/rest";
-    import {REST_BASE} from "../../../../integration/host";
 
     export let setting: ModuleSetting;
     export let path: string;
@@ -38,18 +37,9 @@
     }
 
     onMount(async () => {
-        let registryName;
-        console.log(cSetting.innerValueType);
-        switch (cSetting.innerValueType) {
-            case "BLOCK":
-                registryName = "blocks";
-                break;
-            case "ITEM":
-                registryName = "items";
-                break;
-            default:
-                console.warn(`Unknown inner value type: ${cSetting.innerValueType}`);
-                return;
+        let registryName = cSetting.registry;
+        if (!registryName) {
+            return;
         }
 
         const registryItems: Record<string, RegistryItem> = await getRegistryItems(registryName);
@@ -57,7 +47,7 @@
             .map(([identifier, item]) => ({
                 identifier,
                 name: item.name,
-                icon: `${REST_BASE}/api/v1/client/resource/itemTexture?id=${identifier}`
+                icon: item.icon
             })) as TItem[];
         items = items.sort((a, b) => a.identifier.localeCompare(b.identifier));
     });

@@ -30,7 +30,7 @@ import java.util.*
 
 object FriendManager : Configurable("Friends"), EventListener {
 
-    val friends by listValue(name, TreeSet<Friend>(), valueType = ValueType.FRIEND)
+    val friends by list(name, TreeSet<Friend>(), valueType = ValueType.FRIEND)
 
     @Suppress("unused")
     private val tagEntityEvent = handler<TagEntityEvent> {

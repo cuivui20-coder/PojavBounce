@@ -23,8 +23,8 @@
 
 package net.ccbluex.liquidbounce.integration.interop.protocol.rest.v1.game
 
-import com.google.gson.JsonArray
 import com.google.gson.JsonObject
+import net.ccbluex.liquidbounce.integration.interop.ClientInteropServer
 import net.ccbluex.liquidbounce.utils.client.convertToString
 import net.ccbluex.liquidbounce.utils.client.logger
 import net.ccbluex.liquidbounce.utils.client.mc
@@ -40,7 +40,7 @@ import net.minecraft.registry.tag.ItemTags
 import net.minecraft.registry.tag.TagKey
 import net.minecraft.util.Identifier
 import net.minecraft.util.math.BlockPos
-import java.util.Locale
+import java.util.*
 import kotlin.jvm.optionals.getOrNull
 
 private val ACCEPTED_ITEM_TAGS =
@@ -196,6 +196,7 @@ fun getRegistry(requestObject: RequestObject) = httpOk(JsonObject().apply {
                 val id = Registries.BLOCK.getId(block).toString()
                 val jsonObject = JsonObject().apply {
                     addProperty("name", block.name.convertToString())
+                    addProperty("icon", "${ClientInteropServer.url}/api/v1/client/resource/itemTexture?id=$id")
                 }
                 add(id, jsonObject)
             }
@@ -205,6 +206,7 @@ fun getRegistry(requestObject: RequestObject) = httpOk(JsonObject().apply {
                 val id = Registries.ITEM.getId(item).toString()
                 val jsonObject = JsonObject().apply {
                     addProperty("name", item.name.convertToString())
+                    addProperty("icon", "${ClientInteropServer.url}/api/v1/client/resource/itemTexture?id=$id")
                 }
                 add(id, jsonObject)
             }

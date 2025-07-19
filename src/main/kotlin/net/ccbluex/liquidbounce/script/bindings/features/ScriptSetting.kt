@@ -19,7 +19,7 @@
 package net.ccbluex.liquidbounce.script.bindings.features
 
 import net.ccbluex.liquidbounce.config.types.*
-import net.ccbluex.liquidbounce.deeplearn.ModelHolster.listValue
+import net.ccbluex.liquidbounce.deeplearn.ModelHolster.list
 import net.ccbluex.liquidbounce.script.asArray
 import net.ccbluex.liquidbounce.script.asDoubleArray
 import net.ccbluex.liquidbounce.script.asIntArray
@@ -126,7 +126,7 @@ object ScriptSetting {
         val name = value.getMember("name").asString()
         val default = value.getMember("default").asArray<String>()
 
-        return listValue(name, default.toMutableList(), ValueType.TEXT)
+        return list(name, default.toMutableList(), ValueType.TEXT)
     }
 
     @JvmName("choose")

@@ -4,8 +4,7 @@ import com.google.gson.Gson
 import com.google.gson.JsonElement
 import net.ccbluex.liquidbounce.config.gson.stategies.Exclude
 import net.ccbluex.liquidbounce.config.gson.stategies.ProtocolExclude
-import java.util.HashSet
-import java.util.TreeSet
+import java.util.*
 
 open class ListValue<T : MutableCollection<E>, E>(
     name: String,
@@ -62,6 +61,30 @@ open class ListValue<T : MutableCollection<E>, E>(
 
             else -> error("Unsupported collection type: ${currValue::class.java.name}")
         })
+    }
+
+}
+
+open class RegistryListValue<T : MutableSet<E>, E>(
+    name: String,
+    value: T,
+    innerValueType: ValueType = ValueType.INVALID,
+    innerType: Class<E>,
+) : ListValue<T, E>(
+    name,
+    value,
+    innerValueType,
+    innerType
+) {
+
+    /**
+     * The registry type, which is either "blocks" or "items".
+     * This is used to determine the registry endpoint for the API.
+     */
+    var registry: String = when (innerValueType) {
+        ValueType.BLOCK -> "blocks"
+        ValueType.ITEM -> "items"
+        else -> error("Unsupported registry type: $innerValueType")
     }
 
 }
