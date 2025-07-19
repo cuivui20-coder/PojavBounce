@@ -14,8 +14,10 @@
 <!-- svelte-ignore a11y-no-static-element-interactions -->
 <!-- svelte-ignore a11y-click-events-have-key-events -->
 <div class="item" on:click={() => dispatch("toggle", {enabled: !enabled, value:value})}>
-    {#if icon}
+    {#if !icon}
         <img class="icon" src="{icon}" alt={value}/>
+    {:else}
+        <div class="spacer"></div>
     {/if}
     <div class="name">{name}</div>
     <div class="tick">
@@ -37,12 +39,15 @@
     column-gap: 5px;
     cursor: pointer;
     margin: 2px 5px 2px 0;
-    height: 25px;
   }
 
   .icon {
     height: 25px;
     width: 25px;
+  }
+
+  .spacer {
+    height: 25px;
   }
 
   .name {
