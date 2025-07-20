@@ -30,11 +30,13 @@ import net.ccbluex.liquidbounce.utils.client.logger
 import net.ccbluex.liquidbounce.utils.client.mc
 import net.ccbluex.liquidbounce.utils.client.toName
 import net.ccbluex.liquidbounce.utils.item.isNothing
+import net.ccbluex.liquidbounce.utils.network.packetRegistry
 import net.ccbluex.netty.http.model.RequestObject
 import net.ccbluex.netty.http.util.httpForbidden
 import net.ccbluex.netty.http.util.httpOk
 import net.minecraft.item.BlockItem
 import net.minecraft.item.Items
+import net.minecraft.network.NetworkSide
 import net.minecraft.registry.DefaultedRegistry
 import net.minecraft.registry.Registries
 import net.minecraft.registry.tag.BlockTags
@@ -215,6 +217,28 @@ fun getRegistry(requestObject: RequestObject) = httpOk(JsonObject().apply {
                 add(id.toString(), JsonObject().apply {
                     addProperty("name", effect.name.convertToString())
                     addProperty("icon", iconUrl(potionId))
+                })
+            }
+        }
+
+        "clientpackets" -> {
+            val iconId = Registries.ITEM.getId(Items.PAPER)
+
+            packetRegistry[NetworkSide.SERVERBOUND]?.forEach { packetId ->
+                add(packetId.toString(), JsonObject().apply {
+                    addProperty("name", packetId.toName())
+                    addProperty("icon", iconUrl(iconId))
+                })
+            }
+        }
+
+        "serverpackets" -> {
+            val iconId = Registries.ITEM.getId(Items.PAPER)
+
+            packetRegistry[NetworkSide.CLIENTBOUND]?.forEach { packetId ->
+                add(packetId.toString(), JsonObject().apply {
+                    addProperty("name", packetId.toName())
+                    addProperty("icon", iconUrl(iconId))
                 })
             }
         }

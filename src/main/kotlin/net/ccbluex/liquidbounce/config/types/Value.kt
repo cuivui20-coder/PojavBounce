@@ -424,6 +424,8 @@ enum class ValueType(
     ITEM(HumanInputDeserializer.itemDeserializer),
     SOUND(HumanInputDeserializer.soundDeserializer),
     STATUS_EFFECT(HumanInputDeserializer.statusEffectDeserializer),
+    CLIENT_PACKET,
+    SERVER_PACKET,
     KEY(HumanInputDeserializer.keyDeserializer),
     BIND,
     VECTOR_I,

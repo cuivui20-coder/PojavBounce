@@ -31,6 +31,7 @@ import net.minecraft.client.util.InputUtil
 import net.minecraft.entity.effect.StatusEffect
 import net.minecraft.item.Item
 import net.minecraft.sound.SoundEvent
+import net.minecraft.util.Identifier
 import net.minecraft.util.math.Vec3d
 import net.minecraft.util.math.Vec3i
 import org.lwjgl.glfw.GLFW
@@ -297,6 +298,12 @@ open class Configurable(
 
     fun <C : MutableSet<StatusEffect>> statusEffects(name: String, default: C) =
         registryList(name, default, ValueType.STATUS_EFFECT)
+
+    fun <C : MutableSet<Identifier>> clientPackets(name: String, default: C) =
+        registryList(name, default, ValueType.CLIENT_PACKET)
+
+    fun <C : MutableSet<Identifier>> serverPackets(name: String, default: C) =
+        registryList(name, default, ValueType.SERVER_PACKET)
 
     inline fun <reified T> multiEnumChoice(
         name: String,
