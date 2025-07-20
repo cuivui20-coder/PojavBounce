@@ -88,7 +88,7 @@
                     </div>
                 </div>
                 <button class="logout-button" on:click={logout} title="Logout">
-                    <img src="img/menu/icon-logout.svg" alt="logout" class="logout-icon">
+                    <img src="img/menu/icon-back.svg" alt="logout" class="logout-icon">
                 </button>
             </div>
         {:else}
@@ -98,7 +98,7 @@
                 </div>
                 <div class="login-text">Sign in to LiquidBounce</div>
                 <button class="login-button" on:click={login}>
-                    <img src="img/menu/icon-login.svg" alt="login" class="login-icon">
+                    <img src="img/menu/altmanager/icon-login.svg" alt="login" class="login-icon">
                     Login
                 </button>
             </div>
@@ -149,7 +149,6 @@
         height: 90px;
         border-radius: 50%;
         background-color: $accent-color;
-        overflow: hidden;
         display: flex;
         align-items: center;
         justify-content: center;
@@ -160,6 +159,7 @@
         height: 100%;
         object-fit: cover;
         border-radius: 50%;
+        overflow: hidden;
     }
 
     .steve-avatar {
