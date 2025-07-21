@@ -53,7 +53,12 @@ enum class VirtualScreenType(
     private val recognizer: Predicate<Screen> = Predicate { false },
     val isInGame: Boolean = false,
     private val open: RenderCall = RenderCall {
-        mc.setScreen(VirtualDisplayScreen(byName(routeName)!!))
+        when(byName(routeName)) {
+            CLICK_GUI -> mc.setScreen(net.ccbluex.liquidbounce.features.module.modules.render.gui.ClickGuiScreen())
+            HUD -> mc.setScreen(net.ccbluex.liquidbounce.features.module.modules.render.gui.hud.HudScreen())
+            ALT_MANAGER -> mc.setScreen(net.ccbluex.liquidbounce.features.module.modules.render.gui.menu.AltManagerScreen(mc.currentScreen))
+            else -> mc.setScreen(VirtualDisplayScreen(byName(routeName)!!))
+        }
     }
 ) {
 

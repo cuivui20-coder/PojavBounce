@@ -146,6 +146,17 @@ class ClickGuiScreen : Screen(Text.literal("ClickGUI")) {
         return super.mouseReleased(mouseX, mouseY, button)
     }
     
+    override fun mouseScrolled(mouseX: Double, mouseY: Double, horizontalAmount: Double, verticalAmount: Double): Boolean {
+        // Handle panel scrolling
+        for (panel in panels.values) {
+            if (panel.mouseScrolled(mouseX, mouseY, verticalAmount)) {
+                return true
+            }
+        }
+        
+        return super.mouseScrolled(mouseX, mouseY, horizontalAmount, verticalAmount)
+    }
+    
     override fun keyPressed(keyCode: Int, scanCode: Int, modifiers: Int): Boolean {
         // Handle search functionality
         if (keyCode == 256) { // ESC key

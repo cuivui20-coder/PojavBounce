@@ -59,17 +59,18 @@ object ModuleClickGui :
 
     @Suppress("UnusedPrivateProperty")
     private val cache by boolean("Cache", true).onChanged { cache ->
-        RenderSystem.recordRenderCall {
-            if (cache) {
-                open()
-            } else {
-                close()
-            }
-
-            if (mc.currentScreen is VirtualDisplayScreen || mc.currentScreen is ClickScreen) {
-                enable()
-            }
-        }
+        // Note: Cache setting no longer needed with native GUI
+        // RenderSystem.recordRenderCall {
+        //     if (cache) {
+        //         open()
+        //     } else {
+        //         close()
+        //     }
+        //
+        //     if (mc.currentScreen is VirtualDisplayScreen || mc.currentScreen is ClickScreen) {
+        //         enable()
+        //     }
+        // }
     }
 
     @Suppress("UnusedPrivateProperty")
@@ -112,6 +113,8 @@ object ModuleClickGui :
         super.enable()
     }
 
+    // Note: JCEF browser methods no longer needed with native GUI
+    /*
     private fun open() {
         if (clickGuiBrowser != null) {
             return
@@ -141,7 +144,10 @@ object ModuleClickGui :
 
         clickGuiBrowser?.reload()
     }
+    */
 
+    // Note: Event handlers related to JCEF browser no longer needed
+    /*
     @Suppress("unused")
     private val gameRenderHandler = handler<GameRenderEvent>(priority = OBJECTION_AGAINST_EVERYTHING) {
         clickGuiBrowser?.visible = mc.currentScreen is ClickScreen
@@ -173,6 +179,7 @@ object ModuleClickGui :
             reload()
         }
     }
+    */
 
     /**
      * An empty screen that acts as a hint when to draw the clickgui
