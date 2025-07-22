@@ -20,6 +20,9 @@ package net.ccbluex.liquidbounce.integration.backend.backends.cef
 
 import net.ccbluex.liquidbounce.integration.backend.BrowserBackend
 import net.ccbluex.liquidbounce.integration.backend.browser.Browser
+import net.ccbluex.liquidbounce.integration.backend.browser.BrowserSettings
+import net.ccbluex.liquidbounce.integration.backend.browser.BrowserViewport
+import net.ccbluex.liquidbounce.integration.backend.input.InputAcceptor
 import net.ccbluex.liquidbounce.integration.task.TaskManager
 import net.ccbluex.liquidbounce.utils.client.logger
 
@@ -31,9 +34,8 @@ import net.ccbluex.liquidbounce.utils.client.logger
  */
 class CefBrowserBackend : BrowserBackend {
     
-    private val logger = logger()
-    
     override val isInitialized: Boolean = false
+    override var isAccelerationSupported: Boolean = false
     override val browsers: List<Browser> = emptyList()
     
     override fun makeDependenciesAvailable(taskManager: TaskManager, onAvailable: () -> Unit) {
@@ -53,7 +55,13 @@ class CefBrowserBackend : BrowserBackend {
         // No-op for native GUI
     }
     
-    override fun createBrowser(url: String): Browser {
+    override fun createBrowser(
+        url: String,
+        position: BrowserViewport,
+        settings: BrowserSettings,
+        priority: Short,
+        inputAcceptor: InputAcceptor?
+    ): Browser {
         logger.warn("createBrowser() called on stub implementation - returning stub browser")
         return CefBrowser("", 0, 0)
     }

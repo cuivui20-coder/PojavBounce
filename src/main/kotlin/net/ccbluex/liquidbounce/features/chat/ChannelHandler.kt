@@ -28,8 +28,6 @@ import net.ccbluex.liquidbounce.utils.client.logger
  */
 class ChannelHandler {
     
-    private val logger = logger()
-    
     init {
         logger.info("ChannelHandler initialized as stub - WebSocket chat functionality is disabled")
     }

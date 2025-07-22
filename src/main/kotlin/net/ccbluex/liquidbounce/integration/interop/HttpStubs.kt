@@ -48,7 +48,7 @@ class StubHttpResponse(val data: Any) : FullHttpResponse
 fun httpOk(data: Any): FullHttpResponse = StubHttpResponse(data)
 fun httpBadRequest(message: String): FullHttpResponse = StubHttpResponse(message)
 fun httpForbidden(message: String): FullHttpResponse = StubHttpResponse(message)
-fun httpNotFound(message: String): FullHttpResponse = StubHttpResponse(message)
+fun httpNotFound(message: String, description: String = ""): FullHttpResponse = StubHttpResponse(message)
 fun httpInternalServerError(message: String): FullHttpResponse = StubHttpResponse(message)
 fun httpNoContent(): FullHttpResponse = StubHttpResponse(Unit)
 fun httpCreated(data: Any): FullHttpResponse = StubHttpResponse(data)
@@ -66,6 +66,21 @@ fun post(path: String, handler: (RequestObject) -> FullHttpResponse) {}
 fun get(path: String, handler: (RequestObject) -> FullHttpResponse) {}
 fun put(path: String, handler: (RequestObject) -> FullHttpResponse) {}
 fun delete(path: String, handler: (RequestObject) -> FullHttpResponse) {}
+
+// Node routing stubs for InteropFunctionRegistry
+class Node {
+    fun withPath(path: String, block: Node.() -> Unit): Node {
+        // No-op for stub implementation
+        return this
+    }
+    
+    fun get(path: String, handler: (RequestObject) -> FullHttpResponse) {}
+    fun post(path: String, handler: (RequestObject) -> FullHttpResponse) {}
+    fun put(path: String, handler: (RequestObject) -> FullHttpResponse) {}
+    fun delete(path: String, handler: (RequestObject) -> FullHttpResponse) {}
+}
+
+fun Node.withPath(path: String, block: Node.() -> Unit): Node = withPath(path, block)
 
 // HTTP Server stubs
 interface HttpServer {

@@ -28,7 +28,8 @@ import net.ccbluex.liquidbounce.utils.client.logger
  */
 object ClientInteropServer {
     
-    private val logger = logger()
+    // Stub URL for compatibility with code that references it
+    val url: String = "http://localhost:0" // Port 0 indicates disabled
     
     fun start() {
         logger.info("Client Interop Server is disabled - using native GUI instead of HTTP interop")

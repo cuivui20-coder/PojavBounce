@@ -74,7 +74,7 @@ object CommandTargets : CommandFactory {
                             metadata = MessageMetadata(id = "CTargets#info")
                         )
 
-                        ModuleClickGui.reload()
+                        // ModuleClickGui.reload() - no longer needed with native GUI
                     }
                     .build()
             )

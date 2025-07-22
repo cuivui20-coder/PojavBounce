@@ -38,6 +38,7 @@ import net.minecraft.client.gui.screen.option.OptionsScreen
 import net.minecraft.client.gui.screen.world.CreateWorldScreen
 import net.minecraft.client.gui.screen.world.SelectWorldScreen
 import net.minecraft.client.realms.gui.screen.RealmsMainScreen
+import net.minecraft.text.Text
 import java.util.function.Predicate
 
 /**
@@ -56,8 +57,17 @@ enum class VirtualScreenType(
         when(byName(routeName)) {
             CLICK_GUI -> mc.setScreen(net.ccbluex.liquidbounce.features.module.modules.render.gui.ClickGuiScreen())
             HUD -> mc.setScreen(net.ccbluex.liquidbounce.features.module.modules.render.gui.hud.HudScreen())
-            ALT_MANAGER -> mc.setScreen(net.ccbluex.liquidbounce.features.module.modules.render.gui.menu.AltManagerScreen(mc.currentScreen))
-            else -> mc.setScreen(VirtualDisplayScreen(byName(routeName)!!))
+            ALT_MANAGER -> {
+                // Create a dummy parent screen if current screen is null
+                val parentScreen = mc.currentScreen ?: object : Screen(Text.literal("")) {}
+                mc.setScreen(net.ccbluex.liquidbounce.features.module.modules.render.gui.menu.AltManagerScreen(parentScreen))
+            }
+            else -> {
+                val screenType = byName(routeName)
+                if (screenType != null) {
+                    mc.setScreen(VirtualDisplayScreen(screenType))
+                }
+            }
         }
     }
 ) {
@@ -129,7 +139,7 @@ enum class VirtualScreenType(
     VIAFABRICPLUS_PROTOCOL_SELECTION("viafabricplus_protocol_selection",
         recognizer = { it::class.java.name == "de.florianmichael.viafabricplus.screen.base.ProtocolSelectionScreen" },
         open = { openVfpProtocolSelection() }
-    ),
+    );
 
     // Note: BROWSER screen type removed - using native GUI only
     // BROWSER("browser", recognizer = { it is BrowserScreen });

@@ -73,10 +73,10 @@ class ModuleSettingsScreen(private val module: ClientModule, private val parent:
             settingWidgets.add(
                 BooleanSettingWidget(
                     name = "Enabled",
-                    value = module.running,
+                    value = module.enabled,
                     x = 20,
                     y = currentY,
-                    onValueChanged = { module.running = it }
+                    onValueChanged = { module.enabled = it }
                 )
             )
             currentY += settingHeight + settingSpacing

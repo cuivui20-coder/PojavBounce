@@ -28,8 +28,6 @@ import net.ccbluex.liquidbounce.utils.client.logger
  */
 class ChatClient {
     
-    private val logger = logger()
-    
     val connected: Boolean = false
     val loggedIn: Boolean = false
     val isConnected: Boolean = false
@@ -50,11 +48,19 @@ class ChatClient {
         logger.info("ChatClient.reconnect() called - no-op for stub implementation")
     }
     
-    suspend fun connectAsync() {
+    fun connectAsync() {
         logger.info("ChatClient.connectAsync() called - chat functionality is disabled")
     }
     
     fun sendPacket(packet: Any) {
         logger.info("ChatClient.sendPacket() called - chat functionality is disabled")
+    }
+    
+    fun loginViaJwt(token: String) {
+        logger.info("ChatClient.loginViaJwt() called - authentication is disabled during native GUI migration")
+    }
+    
+    fun requestMojangLogin() {
+        logger.info("ChatClient.requestMojangLogin() called - authentication is disabled during native GUI migration")
     }
 }

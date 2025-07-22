@@ -77,7 +77,7 @@ class ClickGuiScreen : Screen(Text.literal("ClickGUI")) {
         super.render(context, mouseX, mouseY, delta)
     }
     
-    private fun renderBackground(context: DrawContext, mouseX: Int, mouseY: Int, delta: Float) {
+    override fun renderBackground(context: DrawContext, mouseX: Int, mouseY: Int, delta: Float) {
         // Semi-transparent background
         context.fill(0, 0, width, height, 0x99000000.toInt())
         

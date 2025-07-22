@@ -57,7 +57,7 @@ data class ClientAccount(
     }
 
     suspend fun renew() = withContext(Dispatchers.IO) {
-        session = OAuthClient.renewToken(session ?: error("No session"))
+        session = OAuthClient.renewToken(session ?: error("No session")) as? OAuthSession
     }
 
     companion object {

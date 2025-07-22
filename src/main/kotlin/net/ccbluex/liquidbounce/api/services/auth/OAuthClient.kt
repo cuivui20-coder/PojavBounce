@@ -30,8 +30,6 @@ import kotlin.coroutines.suspendCoroutine
  */
 object OAuthClient {
 
-    private val logger = logger()
-
     /**
      * Stub implementation of OAuth authentication
      * 
@@ -58,7 +56,7 @@ object OAuthClient {
         logger.warn("OAuth functionality will be restored in a future update")
         
         // Return empty account for now
-        cont.resume(ClientAccount.EMPTY_ACCOUNT)
+        cont.resumeWith(Result.success(ClientAccount.EMPTY_ACCOUNT))
     }
 
     /**
@@ -66,13 +64,11 @@ object OAuthClient {
      * 
      * TODO: Implement proper token renewal without Netty dependency
      */
-    suspend fun renewToken(session: Any): Any = suspendCoroutine { cont ->
+    suspend fun renewToken(session: Any): Any? = suspendCoroutine { cont ->
         logger.warn("OAuth token renewal is currently disabled due to native GUI migration")
         
-        // For now, fail gracefully
-        cont.resumeWith(Result.failure(
-            UnsupportedOperationException("OAuth token renewal is temporarily disabled during native GUI migration")
-        ))
+        // Return null to indicate renewal failed
+        cont.resumeWith(Result.success(null))
     }
 
 }

@@ -29,8 +29,6 @@ import net.ccbluex.liquidbounce.utils.client.logger
  */
 class SocketEventListener : EventListener {
     
-    private val logger = logger()
-    
     init {
         logger.info("SocketEventListener initialized as stub - HTTP interop events are disabled")
     }

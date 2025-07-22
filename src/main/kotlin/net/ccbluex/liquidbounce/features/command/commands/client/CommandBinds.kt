@@ -107,7 +107,7 @@ object CommandBinds : CommandFactory {
                 )
             }
 
-            ModuleClickGui.reload()
+            // ModuleClickGui.reload() - no longer needed with native GUI
         }
         .build()
 
@@ -135,7 +135,7 @@ object CommandBinds : CommandFactory {
             }
 
             module.bind.bind(bindKey)
-            ModuleClickGui.reload()
+            // ModuleClickGui.reload() - no longer needed with native GUI
             chat(
                 regular(
                     command.result(

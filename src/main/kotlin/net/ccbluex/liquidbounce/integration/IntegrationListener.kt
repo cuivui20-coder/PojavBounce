@@ -163,7 +163,8 @@ object IntegrationListener : EventListener {
         }
 
         try {
-            ModuleClickGui.reload(true)
+            // ModuleClickGui.reload(true) - no longer needed with native GUI
+            logger.info("ClickGUI browser integration restarted -> native GUI (no-op)")
         } catch (e: Exception) {
             logger.error("Failed to restart ClickGUI browser integration.", e)
         }
