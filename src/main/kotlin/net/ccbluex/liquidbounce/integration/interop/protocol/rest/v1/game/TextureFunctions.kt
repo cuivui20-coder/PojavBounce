@@ -20,14 +20,11 @@
  */
 
 package net.ccbluex.liquidbounce.integration.interop.protocol.rest.v1.game
+import net.ccbluex.liquidbounce.integration.interop.*
 
 import net.ccbluex.liquidbounce.render.ui.ItemImageAtlas
 import net.ccbluex.liquidbounce.utils.client.mc
 import net.ccbluex.liquidbounce.utils.client.world
-import net.ccbluex.netty.http.model.RequestObject
-import net.ccbluex.netty.http.util.httpBadRequest
-import net.ccbluex.netty.http.util.httpFileStream
-import net.ccbluex.netty.http.util.httpInternalServerError
 import net.minecraft.client.texture.NativeImageBackedTexture
 import net.minecraft.client.util.DefaultSkinHelper
 import net.minecraft.registry.Registries

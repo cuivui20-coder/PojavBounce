@@ -21,11 +21,11 @@
 @file:Suppress("LongMethod")
 
 package net.ccbluex.liquidbounce.integration.interop.protocol.rest.v1
+import net.ccbluex.liquidbounce.integration.interop.*
 
 import net.ccbluex.liquidbounce.integration.interop.protocol.rest.v1.client.*
 import net.ccbluex.liquidbounce.integration.interop.protocol.rest.v1.features.*
 import net.ccbluex.liquidbounce.integration.interop.protocol.rest.v1.game.*
-import net.ccbluex.netty.http.rest.Node
 
 internal fun registerInteropFunctions(node: Node) = node.withPath("/api/v1/client") {
     // Client Functions

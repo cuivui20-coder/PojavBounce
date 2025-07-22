@@ -18,18 +18,14 @@
  *
  */
 package net.ccbluex.liquidbounce.integration.interop.protocol.rest.v1.game
+import net.ccbluex.liquidbounce.integration.interop.*
 
 import com.google.gson.JsonArray
 import com.google.gson.JsonObject
 import com.mojang.blaze3d.systems.RenderSystem
-import io.netty.handler.codec.http.FullHttpResponse
 import net.ccbluex.liquidbounce.config.gson.util.emptyJsonObject
 import net.ccbluex.liquidbounce.utils.client.logger
 import net.ccbluex.liquidbounce.utils.client.mc
-import net.ccbluex.netty.http.model.RequestObject
-import net.ccbluex.netty.http.util.httpInternalServerError
-import net.ccbluex.netty.http.util.httpOk
-import net.ccbluex.netty.http.util.readImageAsBase64
 import net.minecraft.client.gui.screen.TitleScreen
 import net.minecraft.client.gui.screen.world.EditWorldScreen
 import net.minecraft.client.gui.screen.world.SelectWorldScreen

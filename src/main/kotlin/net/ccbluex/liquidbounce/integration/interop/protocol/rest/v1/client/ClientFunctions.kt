@@ -18,17 +18,14 @@
  *
  */
 package net.ccbluex.liquidbounce.integration.interop.protocol.rest.v1.client
+import net.ccbluex.liquidbounce.integration.interop.*
 
 import com.google.gson.JsonObject
-import io.netty.handler.codec.http.FullHttpResponse
 import net.ccbluex.liquidbounce.LiquidBounce
 import net.ccbluex.liquidbounce.api.services.client.ClientUpdate.update
 import net.ccbluex.liquidbounce.utils.client.inGame
 import net.ccbluex.liquidbounce.utils.client.mc
 import net.ccbluex.liquidbounce.utils.client.usesViaFabricPlus
-import net.ccbluex.netty.http.model.RequestObject
-import net.ccbluex.netty.http.util.httpForbidden
-import net.ccbluex.netty.http.util.httpOk
 import net.minecraft.util.Util
 import java.net.URI
 import java.text.SimpleDateFormat

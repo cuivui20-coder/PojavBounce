@@ -18,6 +18,7 @@
  *
  */
 package net.ccbluex.liquidbounce.integration.interop
+import net.ccbluex.liquidbounce.integration.interop.*
 
 import com.google.gson.JsonObject
 import net.ccbluex.liquidbounce.LiquidBounce
@@ -26,10 +27,6 @@ import net.ccbluex.liquidbounce.integration.interop.protocol.rest.v1.registerInt
 import net.ccbluex.liquidbounce.integration.theme.ThemeManager
 import net.ccbluex.liquidbounce.utils.client.error.ErrorHandler
 import net.ccbluex.liquidbounce.utils.client.logger
-import net.ccbluex.netty.http.HttpServer
-import net.ccbluex.netty.http.middleware.CorsMiddleware
-import net.ccbluex.netty.http.model.RequestObject
-import net.ccbluex.netty.http.util.httpOk
 import java.net.BindException
 import java.net.Socket
 import kotlin.concurrent.thread

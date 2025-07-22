@@ -19,12 +19,10 @@
  *
  */
 package net.ccbluex.liquidbounce.integration.interop.protocol.rest.v1.features
+import net.ccbluex.liquidbounce.integration.interop.*
 
-import io.netty.handler.codec.http.FullHttpResponse
 import net.ccbluex.liquidbounce.config.gson.util.emptyJsonObject
 import net.ccbluex.liquidbounce.utils.client.ServerObserver
-import net.ccbluex.netty.http.model.RequestObject
-import net.ccbluex.netty.http.util.httpOk
 
 // POST /api/v1/client/reconnect
 @Suppress("UNUSED_PARAMETER")

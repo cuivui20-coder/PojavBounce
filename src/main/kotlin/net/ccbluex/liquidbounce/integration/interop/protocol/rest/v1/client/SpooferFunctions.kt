@@ -20,14 +20,11 @@
  */
 
 package net.ccbluex.liquidbounce.integration.interop.protocol.rest.v1.client
+import net.ccbluex.liquidbounce.integration.interop.*
 
-import io.netty.handler.codec.http.FullHttpResponse
 import net.ccbluex.liquidbounce.config.ConfigSystem
 import net.ccbluex.liquidbounce.config.gson.interopGson
 import net.ccbluex.liquidbounce.features.spoofer.SpooferManager
-import net.ccbluex.netty.http.model.RequestObject
-import net.ccbluex.netty.http.util.httpNoContent
-import net.ccbluex.netty.http.util.httpOk
 
 @Suppress("UNUSED_PARAMETER")
 fun getSpooferConfigurable(request: RequestObject): FullHttpResponse {

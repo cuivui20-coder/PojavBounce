@@ -28,9 +28,13 @@ import net.ccbluex.liquidbounce.integration.backend.browser.GlobalBrowserSetting
 import net.ccbluex.liquidbounce.integration.backend.input.InputAcceptor
 import net.ccbluex.liquidbounce.integration.backend.input.InputHandler
 import net.ccbluex.liquidbounce.integration.backend.input.InputListener
-import net.ccbluex.liquidbounce.mcef.MCEF
-import net.ccbluex.liquidbounce.mcef.cef.MCEFBrowser
-import net.ccbluex.liquidbounce.mcef.cef.MCEFBrowserSettings
+// import net.ccbluex.liquidbounce.mcef.MCEF // Removed: No longer using MCEF
+// import net.ccbluex.liquidbounce.mcef.cef.MCEFBrowser // Removed: No longer using MCEF
+// import net.ccbluex.liquidbounce.mcef.cef.MCEFBrowserSettings // Removed: No longer using MCEF
+
+// Stub classes to replace MCEF since we're using native GUI
+interface MCEFBrowser
+interface MCEFBrowserSettings
 import net.ccbluex.liquidbounce.utils.client.logger
 import net.minecraft.client.texture.AbstractTexture
 import net.minecraft.util.Identifier

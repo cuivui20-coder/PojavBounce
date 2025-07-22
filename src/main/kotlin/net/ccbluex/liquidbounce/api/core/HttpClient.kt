@@ -24,7 +24,7 @@ import net.ccbluex.liquidbounce.LiquidBounce
 import net.ccbluex.liquidbounce.config.gson.GsonInstance
 import net.ccbluex.liquidbounce.config.gson.util.decode
 import net.ccbluex.liquidbounce.utils.client.logger
-import net.ccbluex.liquidbounce.mcef.utils.FileUtils as McefFileUtils
+// import net.ccbluex.liquidbounce.mcef.utils.FileUtils as McefFileUtils // Removed: No longer using MCEF
 import net.minecraft.client.texture.NativeImage
 import net.minecraft.client.texture.NativeImageBackedTexture
 import net.minecraft.util.Util
@@ -81,7 +81,8 @@ object HttpClient {
                 throw e
             }
         }
-        .build().also(McefFileUtils::setOkHttpClient)
+        .build()
+        // Note: McefFileUtils::setOkHttpClient removed - no longer using MCEF
 
     suspend fun request(
         url: String,

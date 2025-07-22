@@ -18,16 +18,14 @@
  *
  */
 package net.ccbluex.liquidbounce.integration.interop.protocol.rest.v1.client
+import net.ccbluex.liquidbounce.integration.interop.*
 
 import com.google.gson.JsonArray
 import com.google.gson.JsonObject
-import io.netty.handler.codec.http.FullHttpResponse
 import net.ccbluex.liquidbounce.config.ConfigSystem
 import net.ccbluex.liquidbounce.config.gson.util.emptyJsonObject
 import net.ccbluex.liquidbounce.integration.theme.ThemeManager
 import net.ccbluex.liquidbounce.render.FontManager
-import net.ccbluex.netty.http.model.RequestObject
-import net.ccbluex.netty.http.util.*
 
 // GET /api/v1/client/theme
 @Suppress("UNUSED_PARAMETER")

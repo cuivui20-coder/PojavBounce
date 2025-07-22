@@ -20,16 +20,13 @@
  */
 
 package net.ccbluex.liquidbounce.integration.interop.protocol.rest.v1.features
+import net.ccbluex.liquidbounce.integration.interop.*
 
 import com.google.gson.JsonObject
-import io.netty.handler.codec.http.FullHttpResponse
 import net.ccbluex.liquidbounce.config.gson.util.emptyJsonObject
 import net.ccbluex.liquidbounce.features.item.inventoryAsCompound
 import net.ccbluex.liquidbounce.features.itemgroup.ClientItemGroups
 import net.ccbluex.liquidbounce.utils.client.*
-import net.ccbluex.netty.http.model.RequestObject
-import net.ccbluex.netty.http.util.httpForbidden
-import net.ccbluex.netty.http.util.httpOk
 import net.minecraft.client.gui.screen.ingame.GenericContainerScreen
 import net.minecraft.inventory.SimpleInventory
 import net.minecraft.item.ItemStack

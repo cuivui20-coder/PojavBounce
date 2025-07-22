@@ -1,13 +1,10 @@
 package net.ccbluex.liquidbounce.integration.interop.protocol.rest.v1.client
+import net.ccbluex.liquidbounce.integration.interop.*
 
 import com.google.gson.JsonElement
-import io.netty.handler.codec.http.FullHttpResponse
 import net.ccbluex.liquidbounce.api.thirdparty.IpInfoApi
 import net.ccbluex.liquidbounce.config.gson.interopGson
 import net.ccbluex.liquidbounce.utils.client.mc
-import net.ccbluex.netty.http.model.RequestObject
-import net.ccbluex.netty.http.util.httpForbidden
-import net.ccbluex.netty.http.util.httpOk
 
 // GET /api/v1/client/session
 @Suppress("UNUSED_PARAMETER")
