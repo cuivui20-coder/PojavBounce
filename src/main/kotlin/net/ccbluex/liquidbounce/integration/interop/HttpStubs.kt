@@ -24,7 +24,11 @@ package net.ccbluex.liquidbounce.integration.interop
  */
 
 // HTTP Request/Response stubs
-data class RequestObject(val data: Any? = null) {
+data class RequestObject(
+    val data: Any? = null,
+    val queryParams: Map<String, String> = emptyMap(),
+    val body: String = ""
+) {
     inline fun <reified T> asJson(): T = data as T
 }
 

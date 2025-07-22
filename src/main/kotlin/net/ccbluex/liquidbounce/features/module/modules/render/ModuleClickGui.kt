@@ -31,7 +31,7 @@ import net.ccbluex.liquidbounce.features.module.modules.render.gui.ClickGuiScree
 import net.ccbluex.liquidbounce.integration.VirtualDisplayScreen
 import net.ccbluex.liquidbounce.integration.VirtualScreenType
 // import net.ccbluex.liquidbounce.integration.backend.browser.Browser // Removed: Using native GUI
-import net.ccbluex.liquidbounce.integration.interop.protocol.rest.v1.game.isTyping
+// import net.ccbluex.liquidbounce.integration.interop.protocol.rest.v1.game.isTyping // Removed: No longer using HTTP interop
 import net.ccbluex.liquidbounce.integration.theme.ThemeManager
 import net.ccbluex.liquidbounce.utils.client.asText
 import net.ccbluex.liquidbounce.utils.client.inGame
@@ -79,7 +79,8 @@ object ModuleClickGui :
     }
 
     val isInSearchBar: Boolean
-        get() = mc.currentScreen is ClickGuiScreen && isTyping
+        get() = mc.currentScreen is ClickGuiScreen 
+        // Note: Removed isTyping reference - native GUI handles this internally
 
     object Snapping : ToggleableConfigurable(this, "Snapping", true) {
 
