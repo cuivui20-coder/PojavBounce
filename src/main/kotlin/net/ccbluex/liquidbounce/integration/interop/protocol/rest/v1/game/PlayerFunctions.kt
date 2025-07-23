@@ -20,6 +20,7 @@
  */
 
 package net.ccbluex.liquidbounce.integration.interop.protocol.rest.v1.game
+import net.ccbluex.liquidbounce.integration.interop.*
 
 import net.ccbluex.liquidbounce.config.gson.interopGson
 import net.ccbluex.liquidbounce.features.module.modules.combat.ModuleSwordBlock.hideShieldSlot
@@ -32,8 +33,6 @@ import net.ccbluex.liquidbounce.utils.client.player
 import net.ccbluex.liquidbounce.utils.entity.getActualHealth
 import net.ccbluex.liquidbounce.utils.entity.netherPosition
 import net.ccbluex.liquidbounce.utils.entity.ping
-import net.ccbluex.netty.http.model.RequestObject
-import net.ccbluex.netty.http.util.httpOk
 import net.minecraft.entity.effect.StatusEffectInstance
 import net.minecraft.entity.player.PlayerEntity
 import net.minecraft.item.ItemStack

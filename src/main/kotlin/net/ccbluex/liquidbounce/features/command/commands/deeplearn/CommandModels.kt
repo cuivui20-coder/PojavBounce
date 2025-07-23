@@ -193,7 +193,7 @@ object CommandModels : CommandFactory {
             model.save()
 
             models.setByString(model.name)
-            ModuleClickGui.reload()
+            // ModuleClickGui.reload() - no longer needed with native GUI
         }
 
         chat(command.result("trainingEnd", name, trainingTime.toString(DurationUnit.MINUTES, decimals = 2)))

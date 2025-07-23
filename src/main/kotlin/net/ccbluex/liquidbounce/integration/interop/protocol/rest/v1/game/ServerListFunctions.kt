@@ -20,10 +20,10 @@
  */
 
 package net.ccbluex.liquidbounce.integration.interop.protocol.rest.v1.game
+import net.ccbluex.liquidbounce.integration.interop.*
 
 import com.google.gson.JsonArray
 import com.mojang.blaze3d.systems.RenderSystem
-import io.netty.handler.codec.http.FullHttpResponse
 import net.ccbluex.liquidbounce.config.gson.interopGson
 import net.ccbluex.liquidbounce.config.gson.serializer.minecraft.ResourcePolicy
 import net.ccbluex.liquidbounce.config.gson.util.emptyJsonObject
@@ -36,10 +36,6 @@ import net.ccbluex.liquidbounce.integration.interop.protocol.rest.v1.game.Active
 import net.ccbluex.liquidbounce.integration.interop.protocol.rest.v1.game.ActiveServerList.serverList
 import net.ccbluex.liquidbounce.utils.client.logger
 import net.ccbluex.liquidbounce.utils.client.mc
-import net.ccbluex.netty.http.model.RequestObject
-import net.ccbluex.netty.http.util.httpForbidden
-import net.ccbluex.netty.http.util.httpInternalServerError
-import net.ccbluex.netty.http.util.httpOk
 import net.minecraft.SharedConstants
 import net.minecraft.client.gui.screen.TitleScreen
 import net.minecraft.client.gui.screen.multiplayer.ConnectScreen

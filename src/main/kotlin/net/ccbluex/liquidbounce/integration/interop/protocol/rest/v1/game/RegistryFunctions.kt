@@ -22,6 +22,7 @@
 @file:Suppress("LongMethod")
 
 package net.ccbluex.liquidbounce.integration.interop.protocol.rest.v1.game
+import net.ccbluex.liquidbounce.integration.interop.*
 
 import com.google.gson.JsonObject
 import net.ccbluex.liquidbounce.integration.interop.ClientInteropServer
@@ -31,9 +32,6 @@ import net.ccbluex.liquidbounce.utils.client.mc
 import net.ccbluex.liquidbounce.utils.client.toName
 import net.ccbluex.liquidbounce.utils.item.isNothing
 import net.ccbluex.liquidbounce.utils.network.packetRegistry
-import net.ccbluex.netty.http.model.RequestObject
-import net.ccbluex.netty.http.util.httpForbidden
-import net.ccbluex.netty.http.util.httpOk
 import net.minecraft.item.BlockItem
 import net.minecraft.item.Items
 import net.minecraft.network.NetworkSide

@@ -17,8 +17,9 @@
  * along with LiquidBounce. If not, see <https://www.gnu.org/licenses/>.
  */
 
-import com.github.gradle.node.npm.task.NpmTask
-import com.github.gradle.node.task.NodeTask
+// Note: Node imports removed - no longer needed without Svelte
+// import com.github.gradle.node.npm.task.NpmTask
+// import com.github.gradle.node.task.NodeTask
 import groovy.json.JsonOutput
 import io.gitlab.arturbosch.detekt.DetektCreateBaselineTask
 
@@ -27,7 +28,8 @@ plugins {
     kotlin("jvm")
     id("com.gorylenko.gradle-git-properties") version "2.5.2"
     id("io.gitlab.arturbosch.detekt") version "1.23.6"
-    id("com.github.node-gradle.node") version "7.1.0"
+    // Note: Node plugin removed - no longer needed without Svelte
+    // id("com.github.node-gradle.node") version "7.1.0"
     id("org.jetbrains.dokka") version "1.9.10"
 }
 
@@ -158,9 +160,9 @@ dependencies {
     // Minecraft Authlib
     includeDependency("com.github.CCBlueX:mc-authlib:${project.property("mc_authlib_version")}")
 
-    // JCEF Support
-    includeModDependency("com.github.CCBlueX:mcef:${project.property("mcef_version")}")
-    includeDependency("net.ccbluex:netty-httpserver:2.2.1")
+    // Note: JCEF Support removed - using native GUI instead
+    // includeModDependency("com.github.CCBlueX:mcef:${project.property("mcef_version")}")
+    // includeDependency("net.ccbluex:netty-httpserver:2.2.1")
 
     // Discord RPC Support
     includeDependency("com.github.CCBlueX:DiscordIPC:4.0.0")
@@ -214,7 +216,8 @@ dependencies {
 }
 
 tasks.processResources {
-    dependsOn("bundleTheme")
+    // Note: bundleTheme dependency removed - using native GUI instead
+    // dependsOn("bundleTheme")
 
     val contributors = JsonOutput.prettyPrint(
         JsonOutput.toJson(getContributors("CCBlueX", "LiquidBounce"))
@@ -248,6 +251,8 @@ tasks.processResources {
 
 // The following code will include the theme into the build
 
+// Note: Theme build tasks removed - using native GUI instead
+/*
 tasks.register<NpmTask>("npmInstallTheme") {
     workingDir = file("src-theme")
     args.set(listOf("i"))
@@ -296,11 +301,13 @@ tasks.register<NodeTask>("bundleTheme") {
     inputs.dir("src-theme/dist")
     outputs.files("src-theme/resources/assets/liquidbounce/default_theme.zip")
 }
+*/
 
 sourceSets {
     main {
         resources {
-            srcDirs("src-theme/resources")
+            // Note: src-theme/resources removed - using native GUI instead
+            // srcDirs("src-theme/resources")
         }
     }
 }
@@ -396,7 +403,8 @@ tasks.register<Copy>("copyZipInclude") {
 }
 
 tasks.named("sourcesJar") {
-    dependsOn("bundleTheme")
+    // Note: bundleTheme dependency removed - using native GUI instead
+    // dependsOn("bundleTheme")
 }
 
 tasks.named("build") {

@@ -18,15 +18,15 @@
  *
  */
 package net.ccbluex.liquidbounce.integration.interop.protocol.rest.v1.features
+import net.ccbluex.liquidbounce.integration.interop.*
 
 import com.google.gson.JsonObject
 import net.ccbluex.liquidbounce.config.gson.util.emptyJsonObject
 import net.ccbluex.liquidbounce.integration.BrowserScreen
 import net.ccbluex.liquidbounce.integration.browserBrowsers
 import net.ccbluex.liquidbounce.utils.client.mc
-import net.ccbluex.netty.http.model.RequestObject
-import net.ccbluex.netty.http.util.httpBadRequest
-import net.ccbluex.netty.http.util.httpOk
+
+
 
 // GET /api/v1/client/browser
 @Suppress("UNUSED_PARAMETER")

@@ -27,10 +27,12 @@ import net.ccbluex.liquidbounce.event.sequenceHandler
 import net.ccbluex.liquidbounce.features.module.Category
 import net.ccbluex.liquidbounce.features.module.ClientModule
 import net.ccbluex.liquidbounce.integration.IntegrationListener
+import net.ccbluex.liquidbounce.features.module.modules.render.gui.ClickGuiScreen
 import net.ccbluex.liquidbounce.integration.VirtualDisplayScreen
 import net.ccbluex.liquidbounce.integration.VirtualScreenType
-import net.ccbluex.liquidbounce.integration.backend.browser.Browser
-import net.ccbluex.liquidbounce.integration.interop.protocol.rest.v1.game.isTyping
+// import net.ccbluex.liquidbounce.integration.backend.browser.Browser // Removed: Using native GUI
+// import net.ccbluex.liquidbounce.integration.interop.protocol.rest.v1.game.isTyping
+// Removed: No longer using HTTP interop
 import net.ccbluex.liquidbounce.integration.theme.ThemeManager
 import net.ccbluex.liquidbounce.utils.client.asText
 import net.ccbluex.liquidbounce.utils.client.inGame
@@ -58,17 +60,18 @@ object ModuleClickGui :
 
     @Suppress("UnusedPrivateProperty")
     private val cache by boolean("Cache", true).onChanged { cache ->
-        RenderSystem.recordRenderCall {
-            if (cache) {
-                open()
-            } else {
-                close()
-            }
-
-            if (mc.currentScreen is VirtualDisplayScreen || mc.currentScreen is ClickScreen) {
-                enable()
-            }
-        }
+        // Note: Cache setting no longer needed with native GUI
+        // RenderSystem.recordRenderCall {
+        //     if (cache) {
+        //         open()
+        //     } else {
+        //         close()
+        //     }
+        //
+        //     if (mc.currentScreen is VirtualDisplayScreen || mc.currentScreen is ClickScreen) {
+        //         enable()
+        //     }
+        // }
     }
 
     @Suppress("UnusedPrivateProperty")
@@ -77,7 +80,8 @@ object ModuleClickGui :
     }
 
     val isInSearchBar: Boolean
-        get() = (mc.currentScreen is VirtualDisplayScreen || mc.currentScreen is ClickScreen) && isTyping
+        get() = mc.currentScreen is ClickGuiScreen 
+        // Note: Removed isTyping reference - native GUI handles this internally
 
     object Snapping : ToggleableConfigurable(this, "Snapping", true) {
 
@@ -93,8 +97,8 @@ object ModuleClickGui :
         }
     }
 
-    private var clickGuiBrowser: Browser? = null
-    private const val WORLD_CHANGE_SECONDS_UNTIL_RELOAD = 5
+    // Note: Browser variable removed - no longer needed with native GUI
+    // private var clickGuiBrowser: Browser? = null
 
     init {
         tree(Snapping)
@@ -106,16 +110,13 @@ object ModuleClickGui :
             return
         }
 
-        mc.setScreen(
-            if (clickGuiBrowser == null) {
-                VirtualDisplayScreen(VirtualScreenType.CLICK_GUI)
-            } else {
-                ClickScreen()
-            }
-        )
+        // Use native ClickGUI implementation instead of JCEF
+        mc.setScreen(ClickGuiScreen())
         super.enable()
     }
 
+    // Note: JCEF browser methods no longer needed with native GUI
+    /*
     private fun open() {
         if (clickGuiBrowser != null) {
             return
@@ -145,7 +146,10 @@ object ModuleClickGui :
 
         clickGuiBrowser?.reload()
     }
+    */
 
+    // Note: Event handlers related to JCEF browser no longer needed
+    /*
     @Suppress("unused")
     private val gameRenderHandler = handler<GameRenderEvent>(priority = OBJECTION_AGAINST_EVERYTHING) {
         clickGuiBrowser?.visible = mc.currentScreen is ClickScreen
@@ -177,6 +181,7 @@ object ModuleClickGui :
             reload()
         }
     }
+    */
 
     /**
      * An empty screen that acts as a hint when to draw the clickgui

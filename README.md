@@ -43,14 +43,28 @@ nor legally binding.
 ## Setting up a Workspace
 
 LiquidBounce uses Gradle, to make sure that it is installed properly you can
-check [Gradle's website](https://gradle.org/install/). It also requires Node.js and Python to be installed for
-our [theme](https://github.com/CCBlueX/LiquidBounce/tree/nextgen/src-theme).
+check [Gradle's website](https://gradle.org/install/).
+
+**Note: As of the native GUI migration, Node.js and Python are no longer required**. The project now uses native 
+Minecraft/Fabric GUI components instead of the previous Svelte-based web UI.
 
 1. Clone the repository using `git clone --recurse-submodules https://github.com/CCBlueX/LiquidBounce`.
 2. CD into the local repository.
 3. Run `./gradlew genSources`.
 4. Open the folder as a Gradle project in your preferred IDE.
 5. Run the client.
+
+## GUI Architecture
+
+LiquidBounce has been migrated from a web-based UI (Svelte + JCEF) to native Minecraft GUI components for better 
+performance and integration:
+
+- **ClickGUI**: Native Kotlin implementation using Minecraft's Screen and widget APIs
+- **HUD Editor**: Drag-and-drop HUD element positioning with native rendering
+- **Menu Screens**: Native screens for alt management, settings, and other functions
+- **Settings Widgets**: Custom widget implementations for boolean, float, and integer settings
+
+The previous Svelte-based theme system in `src-theme/` is deprecated but preserved for reference.
 
 ## Additional libraries
 
