@@ -44,13 +44,16 @@ class ClickGuiScreen : Screen(Text.literal("ClickGUI")) {
         var panelIndex = 0
         
         for ((category, modules) in modulesByCategory) {
-            val panel = ClickGuiPanel(
-                category = category,
-                allModules = modules,
+            val panelConfig = PanelConfig(
                 x = 20 + panelIndex * (GuiConfig.panelWidth + 20), // Space panels with config width
                 y = 20,
                 width = GuiConfig.panelWidth,
-                height = GuiConfig.headerHeight,
+                height = GuiConfig.headerHeight
+            )
+            val panel = ClickGuiPanel(
+                category = category,
+                allModules = modules,
+                config = panelConfig,
                 onOpenSettings = { module -> 
                     mc.setScreen(ModuleSettingsScreen(module, this))
                 }
@@ -181,53 +184,46 @@ class ClickGuiScreen : Screen(Text.literal("ClickGUI")) {
     
     override fun keyPressed(keyCode: Int, scanCode: Int, modifiers: Int): Boolean {
         // Handle search functionality
-        when (keyCode) {
-            256 -> { // ESC key
-                if (searchVisible) {
-                    searchVisible = false
+        return ClickGuiInputHandler.handleKeyInput(
+            keyCode, searchVisible, searchText,
+            ClickGuiInputHandler.KeyInputHandlers(
+                onEscapeKey = { visible ->
+                    if (visible) {
+                        searchVisible = false
+                        searchText = ""
+                        filterModules()
+                        true
+                    } else {
+                        close()
+                        false
+                    }
+                },
+                onToggleSearch = {
+                    searchVisible = !searchVisible
+                    if (!searchVisible) {
+                        searchText = ""
+                        filterModules()
+                    }
+                },
+                onBackspace = {
+                    if (searchText.isNotEmpty()) {
+                        searchText = searchText.dropLast(1)
+                        filterModules()
+                    }
+                },
+                onDelete = {
                     searchText = ""
                     filterModules()
-                    return true
-                } else {
-                    close() // Close GUI if search not visible
                 }
-            }
-            342 -> { // F3 key (configurable)
-                searchVisible = !searchVisible
-                if (!searchVisible) {
-                    searchText = ""
-                    filterModules()
-                }
-                return true
-            }
-            259 -> { // Backspace key
-                if (searchVisible && searchText.isNotEmpty()) {
-                    searchText = searchText.dropLast(1)
-                    filterModules()
-                    return true
-                }
-            }
-            261 -> { // Delete key
-                if (searchVisible) {
-                    searchText = ""
-                    filterModules()
-                    return true
-                }
-            }
-        }
-        
-        return super.keyPressed(keyCode, scanCode, modifiers)
+            )
+        ) || super.keyPressed(keyCode, scanCode, modifiers)
     }
     
     override fun charTyped(chr: Char, modifiers: Int): Boolean {
-        if (searchVisible && (chr.isLetterOrDigit() || chr == ' ' || chr == '_' || chr == '-')) {
-            searchText += chr
-            // Filter modules based on search
+        return ClickGuiInputHandler.handleCharInput(chr, searchVisible) { newChar ->
+            searchText += newChar
             filterModules()
-            return true
-        }
-        
-        return super.charTyped(chr, modifiers)
+        } || super.charTyped(chr, modifiers)
     }
     
     private fun filterModules() {
@@ -244,5 +240,65 @@ class ClickGuiScreen : Screen(Text.literal("ClickGUI")) {
     override fun close() {
         mc.mouse.lockCursor()
         super.close()
+    }
+}
+
+/**
+ * Helper object for ClickGui input handling
+ */
+object ClickGuiInputHandler {
+    
+    /**
+     * Data class for key input handling parameters
+     */
+    data class KeyInputHandlers(
+        val onEscapeKey: (Boolean) -> Boolean,
+        val onToggleSearch: () -> Unit,
+        val onBackspace: () -> Unit,
+        val onDelete: () -> Unit
+    )
+    
+    fun handleCharInput(chr: Char, searchVisible: Boolean, onValidChar: (Char) -> Unit): Boolean {
+        if (searchVisible && isValidSearchChar(chr)) {
+            onValidChar(chr)
+            return true
+        }
+        return false
+    }
+    
+    private fun isValidSearchChar(chr: Char): Boolean {
+        return chr.isLetterOrDigit() || chr == ' ' || chr == '_' || chr == '-'
+    }
+    
+    fun handleKeyInput(
+        keyCode: Int,
+        searchVisible: Boolean,
+        searchText: String,
+        handlers: KeyInputHandlers
+    ): Boolean {
+        return when (keyCode) {
+            256 -> handlers.onEscapeKey(searchVisible) // ESC key
+            342 -> { // F3 key (configurable)
+                handlers.onToggleSearch()
+                true
+            }
+            259 -> { // Backspace key
+                if (searchVisible && searchText.isNotEmpty()) {
+                    handlers.onBackspace()
+                    true
+                } else {
+                    false
+                }
+            }
+            261 -> { // Delete key
+                if (searchVisible) {
+                    handlers.onDelete()
+                    true
+                } else {
+                    false
+                }
+            }
+            else -> false
+        }
     }
 }

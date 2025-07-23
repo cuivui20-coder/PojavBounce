@@ -26,17 +26,36 @@ import kotlin.math.max
 import kotlin.math.min
 
 /**
+ * Configuration for a ClickGui panel
+ */
+data class PanelConfig(
+    var x: Int,
+    var y: Int,
+    val width: Int,
+    var height: Int
+)
+
+/**
  * A draggable panel containing modules for a specific category
  */
 class ClickGuiPanel(
     val category: Category,
     private val allModules: List<ClientModule>,
-    var x: Int,
-    var y: Int,
-    val width: Int,
-    var height: Int,
+    val config: PanelConfig,
     private val onOpenSettings: (ClientModule) -> Unit = {}
 ) {
+    var x: Int
+        get() = config.x
+        set(value) { config.x = value }
+    
+    var y: Int
+        get() = config.y
+        set(value) { config.y = value }
+    
+    val width: Int get() = config.width
+    var height: Int
+        get() = config.height
+        set(value) { config.height = value }
     private var expanded = false
     private var isDragging = false
     private var dragOffsetX = 0
@@ -81,22 +100,7 @@ class ClickGuiPanel(
     }
     
     private fun renderExpandButton(context: DrawContext, buttonX: Int, buttonY: Int) {
-        val buttonSize = 15
-        
-        // Button background
-        context.fill(buttonX, buttonY, buttonX + buttonSize, buttonY + buttonSize, 0x88444444.toInt())
-        
-        // Plus/minus icon
-        val centerX = buttonX + buttonSize / 2
-        val centerY = buttonY + buttonSize / 2
-        
-        // Horizontal line
-        context.fill(centerX - 4, centerY - 1, centerX + 4, centerY + 1, 0xFFFFFF)
-        
-        // Vertical line (only for collapsed state)
-        if (!expanded) {
-            context.fill(centerX - 1, centerY - 4, centerX + 1, centerY + 4, 0xFFFFFF)
-        }
+        ClickGuiPanelRenderer.renderExpandButton(context, buttonX, buttonY, expanded)
     }
     
     private fun renderModules(context: DrawContext, mouseX: Int, mouseY: Int) {
@@ -110,7 +114,7 @@ class ClickGuiPanel(
         
         for (module in filteredModules) {
             if (currentY + moduleHeight > moduleAreaY && currentY < moduleAreaY + moduleAreaHeight) {
-                renderModule(context, module, x, currentY, mouseX, mouseY)
+                renderModule(ModuleRenderData(context, module, x, currentY, mouseX, mouseY))
             }
             currentY += moduleHeight
         }
@@ -123,54 +127,68 @@ class ClickGuiPanel(
         }
     }
     
-    private fun renderModule(
-        context: DrawContext, 
-        module: ClientModule, 
-        moduleX: Int, 
-        moduleY: Int, 
-        mouseX: Int, 
-        mouseY: Int
-    ) {
-        val isHovered = mouseX >= moduleX && mouseX <= moduleX + width && 
-                       mouseY >= moduleY && mouseY <= moduleY + moduleHeight
+    /**
+     * Data class for module rendering parameters
+     */
+    private data class ModuleRenderData(
+        val context: DrawContext,
+        val module: ClientModule,
+        val moduleX: Int,
+        val moduleY: Int,
+        val mouseX: Int,
+        val mouseY: Int
+    )
+    
+    private fun renderModule(renderData: ModuleRenderData) {
+        val isHovered = renderData.mouseX >= renderData.moduleX && 
+                       renderData.mouseX <= renderData.moduleX + width && 
+                       renderData.mouseY >= renderData.moduleY && 
+                       renderData.mouseY <= renderData.moduleY + moduleHeight
         
         // Module background
         val bgColor = when {
-            module.running -> GuiConfig.enabledModuleColor
+            renderData.module.running -> GuiConfig.enabledModuleColor
             isHovered -> GuiConfig.hoverColor
             else -> 0xFF111111.toInt()
         }
-        context.fill(
-            moduleX, 
-            moduleY, 
-            moduleX + width, 
-            moduleY + moduleHeight, 
+        renderData.context.fill(
+            renderData.moduleX, 
+            renderData.moduleY, 
+            renderData.moduleX + width, 
+            renderData.moduleY + moduleHeight, 
             bgColor
         )
         
         // Module border
-        context.fill(
-            moduleX, 
-            moduleY + moduleHeight - 1, 
-            moduleX + width, 
-            moduleY + moduleHeight, 
+        renderData.context.fill(
+            renderData.moduleX, 
+            renderData.moduleY + moduleHeight - 1, 
+            renderData.moduleX + width, 
+            renderData.moduleY + moduleHeight, 
             GuiConfig.borderColor
         )
         
         // Module name
-        val textColor = if (module.running) GuiConfig.accentColor else 0xBBBBBB
-        context.drawText(mc.textRenderer, module.name, moduleX + 10, moduleY + 8, textColor, false)
-        
-        // Settings indicator if module has settings
-        if (moduleHasSettings(module)) {
-            context.drawText(
+        val textColor = if (renderData.module.running) GuiConfig.accentColor else 0xBBBBBB
+        renderData.context.drawText(
             mc.textRenderer, 
-            "...", 
-            moduleX + width - 20, 
-            moduleY + 8, 
-            0x888888, 
+            renderData.module.name, 
+            renderData.moduleX + 10, 
+            renderData.moduleY + 8, 
+            textColor, 
             false
         )
+        
+        // Settings indicator if module has settings
+        if (moduleHasSettings(renderData.module)) {
+            renderData.context.drawText(
+                mc.textRenderer, 
+                "...", 
+                renderData.moduleX + width - 20, 
+                renderData.moduleY + 8, 
+                0x888888, 
+                false
+            )
         }
     }
     
@@ -179,77 +197,106 @@ class ClickGuiPanel(
         val scrollbarWidth = 3
         
         // Scrollbar track
-        context.fill(scrollbarX, moduleAreaY, scrollbarX + scrollbarWidth, moduleAreaY + moduleAreaHeight, 0x88444444.toInt())
+        context.fill(
+            scrollbarX, 
+            moduleAreaY, 
+            scrollbarX + scrollbarWidth, 
+            moduleAreaY + moduleAreaHeight, 
+            0x88444444.toInt()
+        )
         
         // Scrollbar thumb
         val totalHeight = filteredModules.size * moduleHeight
         val thumbHeight = max(10, (moduleAreaHeight * moduleAreaHeight) / totalHeight)
-        val thumbY = moduleAreaY + (scrollOffset * (moduleAreaHeight - thumbHeight)) / (totalHeight - moduleAreaHeight)
+        val thumbY = moduleAreaY + 
+            (scrollOffset * (moduleAreaHeight - thumbHeight)) / (totalHeight - moduleAreaHeight)
         
         context.fill(scrollbarX, thumbY, scrollbarX + scrollbarWidth, thumbY + thumbHeight, 0xFFAAAAAA.toInt())
     }
     
     @Suppress("UnusedParameter", "FunctionOnlyReturningConstant")
     private fun moduleHasSettings(module: ClientModule): Boolean {
-        // Simple check - in real implementation, would check module's configuration tree
-        return true // Placeholder
+        return ClickGuiPanelHelper.moduleHasSettings(module)
     }
     
     fun mouseClicked(mouseX: Double, mouseY: Double, button: Int): Boolean {
         val intMouseX = mouseX.toInt()
         val intMouseY = mouseY.toInt()
         
-        // Check if click is within panel bounds
-        if (intMouseX < x || intMouseX > x + width || intMouseY < y) {
+        if (!isClickWithinBounds(intMouseX, intMouseY)) {
+            return false
+        }
+        
+        if (isHeaderClick(intMouseY)) {
+            return handleHeaderClick(intMouseX, intMouseY, button)
+        }
+        
+        if (isModuleAreaClick(intMouseY)) {
+            return handleModuleClick(intMouseX, intMouseY, button)
+        }
+        
+        return false
+    }
+    
+    private fun isClickWithinBounds(mouseX: Int, mouseY: Int): Boolean {
+        if (mouseX < x || mouseX > x + width || mouseY < y) {
             return false
         }
         
         val actualHeight = if (expanded) headerHeight + min(filteredModules.size * moduleHeight, 300) else headerHeight
-        if (intMouseY > y + actualHeight) {
-            return false
+        return mouseY <= y + actualHeight
+    }
+    
+    private fun isHeaderClick(mouseY: Int): Boolean {
+        return mouseY <= y + headerHeight
+    }
+    
+    private fun isModuleAreaClick(mouseY: Int): Boolean {
+        return expanded && mouseY > y + headerHeight
+    }
+    
+    private fun handleHeaderClick(mouseX: Int, mouseY: Int, button: Int): Boolean {
+        // Expand button click
+        if (mouseX >= x + width - 20) {
+            expanded = !expanded
+            return true
         }
         
-        // Header clicks
-        if (intMouseY <= y + headerHeight) {
-            // Expand button click
-            if (intMouseX >= x + width - 20) {
-                expanded = !expanded
-                return true
-            }
-            
-            // Start dragging
-            if (button == 0) {
-                isDragging = true
-                dragOffsetX = intMouseX - x
-                dragOffsetY = intMouseY - y
-                return true
-            }
-            
-            // Right click to expand/collapse
-            if (button == 1) {
-                expanded = !expanded
-                return true
-            }
+        // Start dragging
+        if (button == 0) {
+            isDragging = true
+            dragOffsetX = mouseX - x
+            dragOffsetY = mouseY - y
+            return true
         }
         
-        // Module clicks
-        if (expanded && intMouseY > y + headerHeight) {
-            val moduleIndex = (intMouseY - y - headerHeight + scrollOffset) / moduleHeight
-            if (moduleIndex >= 0 && moduleIndex < filteredModules.size) {
-                val module = filteredModules[moduleIndex]
-                
-                if (button == 0) {
+        // Right click to expand/collapse
+        if (button == 1) {
+            expanded = !expanded
+            return true
+        }
+        
+        return false
+    }
+    
+    private fun handleModuleClick(@Suppress("UnusedParameter") mouseX: Int, mouseY: Int, button: Int): Boolean {
+        val moduleIndex = (mouseY - y - headerHeight + scrollOffset) / moduleHeight
+        if (moduleIndex >= 0 && moduleIndex < filteredModules.size) {
+            val module = filteredModules[moduleIndex]
+            
+            when (button) {
+                0 -> {
                     // Toggle module
                     module.enabled = !module.enabled
                     return true
-                } else if (button == 1) {
+                }
+                1 -> {
                     // Open module settings
                     onOpenSettings(module)
                     return true
                 }
             }
         }
-        
         return false
     }
     
@@ -303,5 +350,39 @@ class ClickGuiPanel(
         
         // Reset scroll when filtering
         scrollOffset = 0
+    }
+}
+
+/**
+ * Helper object for ClickGui panel rendering operations
+ */
+object ClickGuiPanelRenderer {
+    fun renderExpandButton(context: DrawContext, buttonX: Int, buttonY: Int, expanded: Boolean) {
+        val buttonSize = 15
+        
+        // Button background
+        context.fill(buttonX, buttonY, buttonX + buttonSize, buttonY + buttonSize, 0x88444444.toInt())
+        
+        // Plus/minus icon
+        val centerX = buttonX + buttonSize / 2
+        val centerY = buttonY + buttonSize / 2
+        
+        // Horizontal line
+        context.fill(centerX - 4, centerY - 1, centerX + 4, centerY + 1, 0xFFFFFF)
+        
+        // Vertical line (only for collapsed state)
+        if (!expanded) {
+            context.fill(centerX - 1, centerY - 4, centerX + 1, centerY + 4, 0xFFFFFF)
+        }
+    }
+}
+
+/**
+ * Helper object for ClickGui panel utilities
+ */
+object ClickGuiPanelHelper {
+    fun moduleHasSettings(module: ClientModule): Boolean {
+        // Simple check - in real implementation, would check module's configuration tree
+        return true // Placeholder
     }
 }

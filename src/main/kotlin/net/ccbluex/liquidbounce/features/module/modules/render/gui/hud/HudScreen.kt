@@ -161,12 +161,7 @@ class HudScreen : Screen(Text.literal("HUD Editor")) {
     }
     
     private fun saveElementPositions() {
-        try {
-            // Save all element positions to configuration
-            HudConfig.saveConfig()
-        } catch (e: Exception) {
-            println("Error saving HUD element positions: ${e.message}")
-        }
+        HudScreenHelper.saveElementPositions()
     }
     
     override fun shouldPause(): Boolean {
@@ -176,5 +171,19 @@ class HudScreen : Screen(Text.literal("HUD Editor")) {
     override fun close() {
         // Apply changes and return to game
         super.close()
+    }
+}
+
+/**
+ * Helper object for HUD screen operations
+ */
+object HudScreenHelper {
+    fun saveElementPositions() {
+        try {
+            // Save all element positions to configuration
+            HudConfig.saveConfig()
+        } catch (e: Exception) {
+            println("Error saving HUD element positions: ${e.message}")
+        }
     }
 }

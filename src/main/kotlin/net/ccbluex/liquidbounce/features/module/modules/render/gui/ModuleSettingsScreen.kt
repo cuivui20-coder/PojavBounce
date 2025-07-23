@@ -23,6 +23,9 @@ import net.ccbluex.liquidbounce.features.module.modules.render.gui.settings.Bool
 import net.ccbluex.liquidbounce.features.module.modules.render.gui.settings.FloatSettingWidget
 import net.ccbluex.liquidbounce.features.module.modules.render.gui.settings.IntSettingWidget
 import net.ccbluex.liquidbounce.features.module.modules.render.gui.settings.SettingWidget
+import net.ccbluex.liquidbounce.features.module.modules.render.gui.settings.WidgetConfig
+import net.ccbluex.liquidbounce.features.module.modules.render.gui.settings.RangeWidgetConfig
+import net.ccbluex.liquidbounce.features.module.modules.render.gui.settings.IntRangeWidgetConfig
 import net.ccbluex.liquidbounce.utils.client.mc
 import net.minecraft.client.gui.DrawContext
 import net.minecraft.client.gui.screen.Screen
@@ -34,7 +37,10 @@ import kotlin.math.min
 /**
  * Screen for configuring module settings
  */
-class ModuleSettingsScreen(private val module: ClientModule, private val parent: Screen) : Screen(Text.literal("${module.name} Settings")) {
+class ModuleSettingsScreen(
+    private val module: ClientModule, 
+    private val parent: Screen
+) : Screen(Text.literal("${module.name} Settings")) {
     
     private val settingWidgets = mutableListOf<SettingWidget<*>>()
     private var scrollOffset = 0
@@ -74,8 +80,7 @@ class ModuleSettingsScreen(private val module: ClientModule, private val parent:
                 BooleanSettingWidget(
                     name = "Enabled",
                     value = module.enabled,
-                    x = 20,
-                    y = currentY,
+                    config = WidgetConfig(x = 20, y = currentY),
                     onValueChanged = { module.enabled = it }
                 )
             )
@@ -86,10 +91,7 @@ class ModuleSettingsScreen(private val module: ClientModule, private val parent:
                 FloatSettingWidget(
                     name = "Range",
                     value = 4.0f,
-                    x = 20,
-                    y = currentY,
-                    min = 1.0f,
-                    max = 10.0f,
+                    config = RangeWidgetConfig(x = 20, y = currentY, min = 1.0f, max = 10.0f),
                     onValueChanged = { /* save to module config */ }
                 )
             )
@@ -100,10 +102,7 @@ class ModuleSettingsScreen(private val module: ClientModule, private val parent:
                 IntSettingWidget(
                     name = "Delay",
                     value = 100,
-                    x = 20,
-                    y = currentY,
-                    min = 0,
-                    max = 1000,
+                    config = IntRangeWidgetConfig(x = 20, y = currentY, min = 0, max = 1000),
                     onValueChanged = { /* save to module config */ }
                 )
             )
@@ -114,8 +113,7 @@ class ModuleSettingsScreen(private val module: ClientModule, private val parent:
                 BooleanSettingWidget(
                     name = "Through Walls",
                     value = false,
-                    x = 20,
-                    y = currentY,
+                    config = WidgetConfig(x = 20, y = currentY),
                     onValueChanged = { /* save to module config */ }
                 )
             )
@@ -183,15 +181,19 @@ class ModuleSettingsScreen(private val module: ClientModule, private val parent:
     private fun createAdjustedWidget(original: SettingWidget<*>, newY: Int): SettingWidget<*> {
         return when (original) {
             is BooleanSettingWidget -> BooleanSettingWidget(
-                original.name, original.value, original.x, newY
+                original.name, 
+                original.value, 
+                WidgetConfig(original.x, newY)
             )
             is FloatSettingWidget -> FloatSettingWidget(
-                original.name, original.value, original.x, newY, 
-                0.0f, 10.0f // Mock min/max, would get from actual setting
+                original.name, 
+                original.value, 
+                RangeWidgetConfig(original.x, newY, 0.0f, 10.0f) // Mock min/max, would get from actual setting
             )
             is IntSettingWidget -> IntSettingWidget(
-                original.name, original.value, original.x, newY,
-                0, 1000 // Mock min/max, would get from actual setting  
+                original.name, 
+                original.value,
+                IntRangeWidgetConfig(original.x, newY, 0, 1000) // Mock min/max, would get from actual setting  
             )
             else -> original
         }
@@ -219,29 +221,39 @@ class ModuleSettingsScreen(private val module: ClientModule, private val parent:
     override fun mouseClicked(mouseX: Double, mouseY: Double, button: Int): Boolean {
         // Handle widget clicks
         for (widget in settingWidgets) {
-            val adjustedY = widget.y - scrollOffset
-            val adjustedWidget = createAdjustedWidget(widget, adjustedY)
-            
-            if (adjustedWidget.isMouseOver(mouseX.toInt(), mouseY.toInt())) {
-                if (adjustedWidget.mouseClicked(mouseX, mouseY, button)) {
-                    // Update original widget value
-                    when {
-                        widget is BooleanSettingWidget && adjustedWidget is BooleanSettingWidget -> {
-                            widget.value = adjustedWidget.value
-                        }
-                        widget is FloatSettingWidget && adjustedWidget is FloatSettingWidget -> {
-                            widget.value = adjustedWidget.value
-                        }
-                        widget is IntSettingWidget && adjustedWidget is IntSettingWidget -> {
-                            widget.value = adjustedWidget.value
-                        }
-                    }
-                    return true
-                }
+            if (handleWidgetClick(widget, mouseX, mouseY, button)) {
+                return true
             }
         }
         
         return super.mouseClicked(mouseX, mouseY, button)
+    }
+    
+    private fun handleWidgetClick(widget: SettingWidget<*>, mouseX: Double, mouseY: Double, button: Int): Boolean {
+        val adjustedY = widget.y - scrollOffset
+        val adjustedWidget = createAdjustedWidget(widget, adjustedY)
+        
+        if (adjustedWidget.isMouseOver(mouseX.toInt(), mouseY.toInt())) {
+            if (adjustedWidget.mouseClicked(mouseX, mouseY, button)) {
+                updateWidgetValue(widget, adjustedWidget)
+                return true
+            }
+        }
+        return false
+    }
+    
+    private fun updateWidgetValue(original: SettingWidget<*>, adjusted: SettingWidget<*>) {
+        when {
+            original is BooleanSettingWidget && adjusted is BooleanSettingWidget -> {
+                original.value = adjusted.value
+            }
+            original is FloatSettingWidget && adjusted is FloatSettingWidget -> {
+                original.value = adjusted.value
+            }
+            original is IntSettingWidget && adjusted is IntSettingWidget -> {
+                original.value = adjusted.value
+            }
+        }
     }
     
     override fun mouseDragged(mouseX: Double, mouseY: Double, button: Int, deltaX: Double, deltaY: Double): Boolean {
@@ -281,7 +293,12 @@ class ModuleSettingsScreen(private val module: ClientModule, private val parent:
         return super.mouseReleased(mouseX, mouseY, button)
     }
     
-    override fun mouseScrolled(mouseX: Double, mouseY: Double, horizontalAmount: Double, verticalAmount: Double): Boolean {
+    override fun mouseScrolled(
+        mouseX: Double, 
+        mouseY: Double, 
+        horizontalAmount: Double, 
+        verticalAmount: Double
+    ): Boolean {
         val totalHeight = settingWidgets.size * (settingHeight + settingSpacing)
         val areaHeight = height - 100
         
@@ -295,16 +312,27 @@ class ModuleSettingsScreen(private val module: ClientModule, private val parent:
     }
     
     private fun resetToDefaults() {
-        try {
-            // Reset all settings to defaults
-            // In real implementation, would reset module's configurable values
+        ModuleSettingsHelper.resetToDefaults {
             initializeSettingWidgets()
-        } catch (e: Exception) {
-            println("Error resetting module settings: ${e.message}")
         }
     }
     
     override fun shouldPause(): Boolean {
         return false
+    }
+}
+
+/**
+ * Helper object for module settings operations
+ */
+object ModuleSettingsHelper {
+    fun resetToDefaults(onComplete: () -> Unit) {
+        try {
+            // Reset all settings to defaults
+            // In real implementation, would reset module's configurable values
+            onComplete()
+        } catch (e: Exception) {
+            println("Error resetting module settings: ${e.message}")
+        }
     }
 }

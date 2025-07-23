@@ -53,17 +53,24 @@ abstract class SettingWidget<T>(
 }
 
 /**
+ * Configuration for setting widgets
+ */
+data class WidgetConfig(
+    val x: Int,
+    val y: Int,
+    val width: Int = 200,
+    val height: Int = 20
+)
+
+/**
  * Boolean toggle setting widget
  */
 class BooleanSettingWidget(
     name: String,
     value: Boolean,
-    x: Int,
-    y: Int,
-    width: Int = 200,
-    height: Int = 20,
+    config: WidgetConfig,
     private val onValueChanged: (Boolean) -> Unit = {}
-) : SettingWidget<Boolean>(name, value, x, y, width, height) {
+) : SettingWidget<Boolean>(name, value, config.x, config.y, config.width, config.height) {
     
     override fun render(context: DrawContext, mouseX: Int, mouseY: Int, isHovered: Boolean) {
         renderBackground(context, isHovered)
@@ -101,19 +108,29 @@ class BooleanSettingWidget(
 }
 
 /**
+ * Range configuration for numeric widgets
+ */
+data class RangeWidgetConfig(
+    val x: Int,
+    val y: Int,
+    val min: Float,
+    val max: Float,
+    val width: Int = 200,
+    val height: Int = 20
+)
+
+/**
  * Float/Double slider setting widget
  */
 class FloatSettingWidget(
     name: String,
     value: Float,
-    x: Int,
-    y: Int,
-    private val min: Float,
-    private val max: Float,
-    width: Int = 200,
-    height: Int = 20,
+    config: RangeWidgetConfig,
     private val onValueChanged: (Float) -> Unit = {}
-) : SettingWidget<Float>(name, value, x, y, width, height) {
+) : SettingWidget<Float>(name, value, config.x, config.y, config.width, config.height) {
+    
+    private val min = config.min
+    private val max = config.max
     
     private var isDragging = false
     
@@ -134,7 +151,13 @@ class FloatSettingWidget(
         val handleX = (x + 5 + (width - 10) * progress).toInt()
         val handleWidth = 8
         
-        context.fill(handleX - handleWidth / 2, sliderY - 2, handleX + handleWidth / 2, sliderY + sliderHeight + 2, 0xFF00AAFF.toInt())
+        context.fill(
+            handleX - handleWidth / 2, 
+            sliderY - 2, 
+            handleX + handleWidth / 2, 
+            sliderY + sliderHeight + 2, 
+            0xFF00AAFF.toInt()
+        )
     }
     
     override fun mouseClicked(mouseX: Double, mouseY: Double, button: Int): Boolean {
@@ -173,19 +196,29 @@ class FloatSettingWidget(
 }
 
 /**
+ * Integer range configuration for integer widgets
+ */
+data class IntRangeWidgetConfig(
+    val x: Int,
+    val y: Int,
+    val min: Int,
+    val max: Int,
+    val width: Int = 200,
+    val height: Int = 20
+)
+
+/**
  * Integer slider setting widget
  */
 class IntSettingWidget(
     name: String,
     value: Int,
-    x: Int,
-    y: Int,
-    private val min: Int,
-    private val max: Int,
-    width: Int = 200,
-    height: Int = 20,
+    config: IntRangeWidgetConfig,
     private val onValueChanged: (Int) -> Unit = {}
-) : SettingWidget<Int>(name, value, x, y, width, height) {
+) : SettingWidget<Int>(name, value, config.x, config.y, config.width, config.height) {
+    
+    private val min = config.min
+    private val max = config.max
     
     private var isDragging = false
     
@@ -206,7 +239,13 @@ class IntSettingWidget(
         val handleX = (x + 5 + (width - 10) * progress).toInt()
         val handleWidth = 8
         
-        context.fill(handleX - handleWidth / 2, sliderY - 2, handleX + handleWidth / 2, sliderY + sliderHeight + 2, 0xFF00AAFF.toInt())
+        context.fill(
+            handleX - handleWidth / 2, 
+            sliderY - 2, 
+            handleX + handleWidth / 2, 
+            sliderY + sliderHeight + 2, 
+            0xFF00AAFF.toInt()
+        )
     }
     
     override fun mouseClicked(mouseX: Double, mouseY: Double, button: Int): Boolean {

@@ -100,16 +100,20 @@ object GuiConfig {
     
     // Panel settings
     val panelWidth: Int
-        get() = properties.getProperty("panel.width", DEFAULT_PANEL_WIDTH.toString()).toIntOrNull() ?: DEFAULT_PANEL_WIDTH
+        get() = properties.getProperty("panel.width", DEFAULT_PANEL_WIDTH.toString())
+            .toIntOrNull() ?: DEFAULT_PANEL_WIDTH
     
     val panelMaxHeight: Int
-        get() = properties.getProperty("panel.maxHeight", DEFAULT_PANEL_MAX_HEIGHT.toString()).toIntOrNull() ?: DEFAULT_PANEL_MAX_HEIGHT
+        get() = properties.getProperty("panel.maxHeight", DEFAULT_PANEL_MAX_HEIGHT.toString())
+            .toIntOrNull() ?: DEFAULT_PANEL_MAX_HEIGHT
     
     val moduleHeight: Int
-        get() = properties.getProperty("module.height", DEFAULT_MODULE_HEIGHT.toString()).toIntOrNull() ?: DEFAULT_MODULE_HEIGHT
+        get() = properties.getProperty("module.height", DEFAULT_MODULE_HEIGHT.toString())
+            .toIntOrNull() ?: DEFAULT_MODULE_HEIGHT
     
     val headerHeight: Int
-        get() = properties.getProperty("header.height", DEFAULT_HEADER_HEIGHT.toString()).toIntOrNull() ?: DEFAULT_HEADER_HEIGHT
+        get() = properties.getProperty("header.height", DEFAULT_HEADER_HEIGHT.toString())
+            .toIntOrNull() ?: DEFAULT_HEADER_HEIGHT
     
     // Input settings
     val searchKey: Int
@@ -117,25 +121,32 @@ object GuiConfig {
     
     // Color settings
     val backgroundColor: Int
-        get() = properties.getProperty("color.background", DEFAULT_BACKGROUND_COLOR.toString()).toIntOrNull() ?: DEFAULT_BACKGROUND_COLOR
+        get() = properties.getProperty("color.background", DEFAULT_BACKGROUND_COLOR.toString())
+            .toIntOrNull() ?: DEFAULT_BACKGROUND_COLOR
     
     val headerColor: Int
-        get() = properties.getProperty("color.header", DEFAULT_HEADER_COLOR.toString()).toIntOrNull() ?: DEFAULT_HEADER_COLOR
+        get() = properties.getProperty("color.header", DEFAULT_HEADER_COLOR.toString())
+            .toIntOrNull() ?: DEFAULT_HEADER_COLOR
     
     val accentColor: Int
-        get() = properties.getProperty("color.accent", DEFAULT_ACCENT_COLOR.toString()).toIntOrNull() ?: DEFAULT_ACCENT_COLOR
+        get() = properties.getProperty("color.accent", DEFAULT_ACCENT_COLOR.toString())
+            .toIntOrNull() ?: DEFAULT_ACCENT_COLOR
     
     val borderColor: Int
-        get() = properties.getProperty("color.border", DEFAULT_BORDER_COLOR.toString()).toIntOrNull() ?: DEFAULT_BORDER_COLOR
+        get() = properties.getProperty("color.border", DEFAULT_BORDER_COLOR.toString())
+            .toIntOrNull() ?: DEFAULT_BORDER_COLOR
     
     val textColor: Int
-        get() = properties.getProperty("color.text", DEFAULT_TEXT_COLOR.toString()).toIntOrNull() ?: DEFAULT_TEXT_COLOR
+        get() = properties.getProperty("color.text", DEFAULT_TEXT_COLOR.toString())
+            .toIntOrNull() ?: DEFAULT_TEXT_COLOR
     
     val enabledModuleColor: Int
-        get() = properties.getProperty("color.enabledModule", DEFAULT_ENABLED_MODULE_COLOR.toString()).toIntOrNull() ?: DEFAULT_ENABLED_MODULE_COLOR
+        get() = properties.getProperty("color.enabledModule", DEFAULT_ENABLED_MODULE_COLOR.toString())
+            .toIntOrNull() ?: DEFAULT_ENABLED_MODULE_COLOR
     
     val hoverColor: Int
-        get() = properties.getProperty("color.hover", DEFAULT_HOVER_COLOR.toString()).toIntOrNull() ?: DEFAULT_HOVER_COLOR
+        get() = properties.getProperty("color.hover", DEFAULT_HOVER_COLOR.toString())
+            .toIntOrNull() ?: DEFAULT_HOVER_COLOR
     
     // Utility functions
     fun getGridSnappedPosition(x: Int, y: Int): Pair<Int, Int> {
