@@ -31,20 +31,20 @@ object GuiConfig {
     
     // Default values
     private const val DEFAULT_GRID_SIZE = 20
-    private const val DEFAULT_PANEL_WIDTH = 150  // Reduced from 250 to fit more tabs on screen
-    private const val DEFAULT_PANEL_MAX_HEIGHT = 250  // Reduced from 300 to make tabs smaller
-    private const val DEFAULT_MODULE_HEIGHT = 22  // Reduced from 25 to make modules more compact
-    private const val DEFAULT_HEADER_HEIGHT = 22  // Reduced from 25 to make headers smaller
+    private const val DEFAULT_PANEL_WIDTH = 50  // Made 3x smaller for more compact tabs
+    private const val DEFAULT_PANEL_MAX_HEIGHT = 80  // Made 3x smaller for more compact tabs
+    private const val DEFAULT_MODULE_HEIGHT = 16  // Made smaller but still readable
+    private const val DEFAULT_HEADER_HEIGHT = 16  // Made smaller but still readable
     private const val DEFAULT_SEARCH_KEY = 342 // F3
     
-    // Color defaults
-    private const val DEFAULT_BACKGROUND_COLOR = 0xE6000000.toInt()
-    private const val DEFAULT_HEADER_COLOR = 0xFF222222.toInt()
+    // Color defaults - lighter to reduce darkish tint
+    private const val DEFAULT_BACKGROUND_COLOR = 0x80000000.toInt() // Reduced from 90% to 50% opacity
+    private const val DEFAULT_HEADER_COLOR = 0xFF333333.toInt() // Lighter header
     private const val DEFAULT_ACCENT_COLOR = 0xFF00AAFF.toInt()
-    private const val DEFAULT_BORDER_COLOR = 0xFF444444.toInt()
+    private const val DEFAULT_BORDER_COLOR = 0xFF666666.toInt() // Lighter border
     private const val DEFAULT_TEXT_COLOR = 0xFFFFFF
-    private const val DEFAULT_ENABLED_MODULE_COLOR = 0xFF003366.toInt()
-    private const val DEFAULT_HOVER_COLOR = 0xFF333333.toInt()
+    private const val DEFAULT_ENABLED_MODULE_COLOR = 0xFF004080.toInt() // Slightly lighter enabled module color
+    private const val DEFAULT_HOVER_COLOR = 0xFF444444.toInt() // Lighter hover color
     
     init {
         loadConfig()
