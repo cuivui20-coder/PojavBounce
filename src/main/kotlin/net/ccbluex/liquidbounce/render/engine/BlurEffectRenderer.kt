@@ -25,6 +25,7 @@ import net.ccbluex.liquidbounce.event.EventManager.callEvent
 import net.ccbluex.liquidbounce.event.events.OverlayRenderEvent
 import net.ccbluex.liquidbounce.features.module.MinecraftShortcuts
 import net.ccbluex.liquidbounce.features.module.modules.render.ModuleHud.isBlurEffectActive
+import net.ccbluex.liquidbounce.features.module.modules.render.gui.ModuleSettingsScreen
 import net.ccbluex.liquidbounce.render.shader.BlitShader
 import net.ccbluex.liquidbounce.render.shader.UniformProvider
 import net.ccbluex.liquidbounce.render.ui.ItemImageAtlas
@@ -124,7 +125,9 @@ object BlurEffectRenderer : MinecraftShortcuts {
     fun startOverlayDrawing(context: DrawContext, tickDelta: Float) {
         ItemImageAtlas.updateAtlas(context)
 
-        if (isBlurEffectActive) {
+        // Skip blur effect when ModuleSettingsScreen is active
+        val isSettingsScreenActive = mc.currentScreen is ModuleSettingsScreen
+        if (isBlurEffectActive && !isSettingsScreenActive) {
             this.isDrawingHudFramebuffer = true
 
             this.overlayFramebuffer.clear()
