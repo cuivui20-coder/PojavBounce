@@ -36,7 +36,6 @@ class BlurEffectSettingsScreenTest {
         // Mock screens to test the logic
         val settingsScreen = ModuleSettingsScreen(ModuleHud, TitleScreen())
         val chatScreen = ChatScreen("")
-        val titleScreen = TitleScreen()
         
         // The blur effect should be disabled globally
         assertFalse(ModuleHud.isBlurEffectActive, "Blur effect should be globally disabled")
