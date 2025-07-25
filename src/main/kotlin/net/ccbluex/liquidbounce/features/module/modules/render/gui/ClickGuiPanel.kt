@@ -275,7 +275,29 @@ class ClickGuiPanel(
         }
     }
     
-    private fun handleModuleClick(@Suppress("UnusedParameter") mouseX: Int, mouseY: Int, button: Int): Boolean {
+    private fun handleModuleClick(mouseX: Int, mouseY: Int, button: Int): Boolean {
+        // First priority: Check if click is on scrollbar area
+        if (canScroll() && button == 0) {
+            val scrollbarX = x + width - 5
+            val scrollbarWidth = 3
+            val moduleAreaY = y + headerHeight
+            val moduleAreaHeight = min(filteredModules.size * moduleHeight, GuiConfig.panelMaxHeight)
+            
+            // Expanded scrollbar hit area for easier use
+            val expandedScrollbarX = x + width - 8
+            val expandedScrollbarWidth = 8
+            
+            if (mouseX >= expandedScrollbarX && mouseX <= expandedScrollbarX + expandedScrollbarWidth && 
+                mouseY >= moduleAreaY && mouseY <= moduleAreaY + moduleAreaHeight) {
+                
+                // Start scroll dragging from scrollbar
+                isScrollDragging = true
+                scrollDragStartY = mouseY.toDouble()
+                return true
+            }
+        }
+        
+        // Second priority: Check module clicks
         val moduleIndex = (mouseY - y - headerHeight + scrollOffset) / moduleHeight
         if (moduleIndex >= 0 && moduleIndex < filteredModules.size) {
             val module = filteredModules[moduleIndex]
@@ -347,13 +369,35 @@ class ClickGuiPanel(
         val intMouseX = mouseX.toInt()
         val intMouseY = mouseY.toInt()
         
-        // Check if mouse is over module area
-        if (intMouseX >= x && intMouseX <= x + width && 
-            intMouseY >= y + headerHeight && intMouseY <= y + headerHeight + 300) {
+        // First priority: Check if mouse is over scrollbar area (if scrollable content exists)
+        if (canScroll()) {
+            val scrollbarX = x + width - 5
+            val scrollbarWidth = 3
+            val moduleAreaY = y + headerHeight
+            val moduleAreaHeight = min(filteredModules.size * moduleHeight, GuiConfig.panelMaxHeight)
             
-            val maxScroll = max(0, filteredModules.size * moduleHeight - 300)
-            scrollOffset = max(0, min(maxScroll, scrollOffset - (amount * 30).toInt()))
-            return true
+            // Expanded scrollbar hit area for easier use
+            val expandedScrollbarX = x + width - 8
+            val expandedScrollbarWidth = 8
+            
+            if (intMouseX >= expandedScrollbarX && intMouseX <= expandedScrollbarX + expandedScrollbarWidth && 
+                intMouseY >= moduleAreaY && intMouseY <= moduleAreaY + moduleAreaHeight) {
+                
+                val maxScroll = max(0, filteredModules.size * moduleHeight - GuiConfig.panelMaxHeight)
+                scrollOffset = max(0, min(maxScroll, scrollOffset - (amount * 30).toInt()))
+                return true
+            }
+        }
+        
+        // Second priority: Check if mouse is over module area (for content scrolling)
+        if (intMouseX >= x && intMouseX <= x + width && 
+            intMouseY >= y + headerHeight && intMouseY <= y + headerHeight + GuiConfig.panelMaxHeight) {
+            
+            if (canScroll()) {
+                val maxScroll = max(0, filteredModules.size * moduleHeight - GuiConfig.panelMaxHeight)
+                scrollOffset = max(0, min(maxScroll, scrollOffset - (amount * 30).toInt()))
+                return true
+            }
         }
         
         return false
