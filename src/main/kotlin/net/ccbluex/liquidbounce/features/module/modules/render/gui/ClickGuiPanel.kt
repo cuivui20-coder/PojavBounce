@@ -299,30 +299,40 @@ class ClickGuiPanel(
         
         // Second priority: Check module clicks
         val moduleIndex = (mouseY - y - headerHeight + scrollOffset) / moduleHeight
-        if (moduleIndex >= 0 && moduleIndex < filteredModules.size) {
+        val isValidModuleIndex = moduleIndex >= 0 && moduleIndex < filteredModules.size
+        
+        if (isValidModuleIndex) {
             val module = filteredModules[moduleIndex]
-            
-            when (button) {
-                0 -> {
-                    // Toggle module
-                    module.enabled = !module.enabled
-                    return true
-                }
-                1 -> {
-                    // Open module settings popup next to the module
-                    val moduleX = x
-                    val moduleY = y + headerHeight + moduleIndex * moduleHeight - scrollOffset
-                    onOpenSettings(module, moduleX, moduleY, width, moduleHeight)
-                    return true
-                }
-            }
-        } else if (button == 0 && canScroll()) {
-            // Start scroll dragging if clicked in empty scrollable area
+            val result = handleSpecificModuleClick(module, moduleIndex, button)
+            if (result) return true
+        }
+        
+        // Third priority: Handle empty area scrolling
+        if (button == 0 && canScroll()) {
             isScrollDragging = true
             scrollDragStartY = mouseY.toDouble()
             return true
         }
+        
         return false
+    }
+    
+    private fun handleSpecificModuleClick(module: ClientModule, moduleIndex: Int, button: Int): Boolean {
+        return when (button) {
+            0 -> {
+                // Toggle module
+                module.enabled = !module.enabled
+                true
+            }
+            1 -> {
+                // Open module settings popup next to the module
+                val moduleX = x
+                val moduleY = y + headerHeight + moduleIndex * moduleHeight - scrollOffset
+                onOpenSettings(module, moduleX, moduleY, width, moduleHeight)
+                true
+            }
+            else -> false
+        }
     }
     
     @Suppress("UnusedParameter")
