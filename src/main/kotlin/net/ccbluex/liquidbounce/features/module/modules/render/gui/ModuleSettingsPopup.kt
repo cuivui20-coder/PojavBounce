@@ -187,8 +187,8 @@ class ModuleSettingsPopup(
             name = value.name,
             value = typedValue.get(),
             config = WidgetConfig(x = widgetX, y = widgetY, width = widgetWidth),
-            onValueChanged = { newValue -> 
-                value.setByString(newValue.toString())
+            onValueChanged = { newValue ->
+                typedValue.set(newValue)
                 saveModuleConfiguration()
             }
         )
@@ -203,8 +203,8 @@ class ModuleSettingsPopup(
             name = value.name,
             value = currentValue,
             config = RangeWidgetConfig(x = widgetX, y = widgetY, min = min, max = max, width = widgetWidth),
-            onValueChanged = { newValue -> 
-                value.setByString(newValue.toString())
+            onValueChanged = { newValue ->
+                typedValue.set(newValue)
                 saveModuleConfiguration()
             }
         )
@@ -219,8 +219,8 @@ class ModuleSettingsPopup(
             name = value.name,
             value = currentValue,
             config = IntRangeWidgetConfig(x = widgetX, y = widgetY, min = min, max = max, width = widgetWidth),
-            onValueChanged = { newValue -> 
-                value.setByString(newValue.toString())
+            onValueChanged = { newValue ->
+                typedValue.set(newValue)
                 saveModuleConfiguration()
             }
         )
