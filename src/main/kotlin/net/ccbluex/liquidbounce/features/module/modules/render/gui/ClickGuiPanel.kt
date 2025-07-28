@@ -520,7 +520,7 @@ object ClickGuiPanelInteraction {
         }
         
         val actualHeight = if (bounds.expanded) {
-            bounds.headerHeight + min(bounds.moduleCount * bounds.moduleHeight, 300)
+            bounds.headerHeight + min(bounds.moduleCount * bounds.moduleHeight, GuiConfig.panelMaxHeight)
         } else {
             bounds.headerHeight
         }
