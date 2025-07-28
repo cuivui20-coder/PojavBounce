@@ -111,8 +111,8 @@ object ClickGuiConfigManager {
      * Get default position for a panel if no saved state exists
      */
     fun getDefaultPosition(categoryIndex: Int): Pair<Int, Int> {
-        val spacing = GuiConfig.headerHeight + 10
-        return Pair(20, 20 + categoryIndex * spacing)
+        val spacing = GuiConfig.panelWidth + 10
+        return Pair(20 + categoryIndex * spacing, 20)
     }
     
     /**
