@@ -55,7 +55,7 @@ import net.minecraft.client.gui.screen.DownloadingTerrainScreen
 object ModuleHud : ClientModule("HUD", Category.RENDER, state = true, hide = true) {
 
     override val running
-        get() = this.enabled && !isDestructed
+        get() = this.enabled && !isDestructed && inGame
 
     private val visible: Boolean
         get() = !isHidingNow && inGame
