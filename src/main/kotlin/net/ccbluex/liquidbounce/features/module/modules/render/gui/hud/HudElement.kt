@@ -96,10 +96,10 @@ abstract class HudElement(
     }
     
     protected fun renderBackground(context: DrawContext, isSelected: Boolean) {
-        if (!isSelected) return // Only render background when selected in HUD editor
-        
-        context.fill(x, y, x + width, y + height, 0x80222222.toInt())
-        context.drawBorder(x, y, width, height, 0xFF00AAFF.toInt())
+        if (isSelected) { // Only render background and border when selected in the editor
+            context.fill(x, y, x + width, y + height, 0x80222222.toInt())
+            context.drawBorder(x, y, width, height, 0xFF00AAFF.toInt())
+        }
     }
 }
 

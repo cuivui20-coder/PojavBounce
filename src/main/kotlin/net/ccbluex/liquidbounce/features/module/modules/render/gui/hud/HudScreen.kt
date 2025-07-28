@@ -31,7 +31,7 @@ import java.awt.Color
 @Suppress("TooManyFunctions")
 class HudScreen : Screen(Text.literal("HUD Editor")) {
     
-    private val hudElements = mutableListOf<HudElement>()
+    private val hudElements: List<HudElement> get() = HudManager.elements
     private var selectedElement: HudElement? = null
     private var isDragging = false
     private var dragOffsetX = 0
@@ -40,17 +40,7 @@ class HudScreen : Screen(Text.literal("HUD Editor")) {
     override fun init() {
         super.init()
         
-        // Initialize HUD elements
-        initializeHudElements()
-    }
-    
-    private fun initializeHudElements() {
-        // Add HUD elements with new default positions to match the video
-        hudElements.clear()
-        hudElements.add(WatermarkElement(2, 2))
-        hudElements.add(ArrayListElement(width - 120, 2))
-        hudElements.add(InfoPanelElement(2, 30))
-        hudElements.add(SpeedElement(width / 2 - 50, height - 40))
+        HudManager.initialize()
     }
     
     override fun render(context: DrawContext, mouseX: Int, mouseY: Int, delta: Float) {
@@ -189,5 +179,4 @@ object HudScreenHelper {
             println("Error saving HUD element positions: ${e.message}")
         }
     }
-
 }
