@@ -337,36 +337,75 @@ class ModuleSettingsPopup(
         }
     }
     
+    @Suppress("UNCHECKED_CAST")
     private fun createAdjustedWidget(original: SettingWidget<*>, newY: Int): SettingWidget<*> {
         val widgetWidth = POPUP_WIDTH - POPUP_PADDING * 2
-        
+        val value = module.containedValues.find { it.name == original.name } ?: return original
+
         return when (original) {
-            is BooleanSettingWidget -> BooleanSettingWidget(
-                original.name, 
-                original.value, 
-                WidgetConfig(original.x, newY, widgetWidth)
-            )
-            is FloatSettingWidget -> FloatSettingWidget(
-                original.name, 
-                original.value, 
-                RangeWidgetConfig(original.x, newY, 0.0f, 10.0f, widgetWidth)
-            )
-            is IntSettingWidget -> IntSettingWidget(
-                original.name, 
-                original.value,
-                IntRangeWidgetConfig(original.x, newY, 0, 1000, widgetWidth)
-            )
-            is TextSettingWidget -> TextSettingWidget(
-                original.name,
-                original.value,
-                WidgetConfig(original.x, newY, widgetWidth)
-            )
-            is EnumSettingWidget -> EnumSettingWidget(
-                original.name,
-                original.value,
-                original.choices,
-                WidgetConfig(original.x, newY, widgetWidth)
-            )
+            is BooleanSettingWidget -> {
+                val typedValue = value as Value<Boolean>
+                BooleanSettingWidget(
+                    name = original.name,
+                    value = original.value,
+                    config = WidgetConfig(x = original.x, y = newY, width = widgetWidth),
+                    onValueChanged = { newValue ->
+                        typedValue.set(newValue)
+                        saveModuleConfiguration()
+                    }
+                )
+            }
+            is FloatSettingWidget -> {
+                val typedValue = value as Value<Float>
+                val (min, max) = getRangeForValue(value, 0.0f, 10.0f)
+                FloatSettingWidget(
+                    name = original.name,
+                    value = original.value,
+                    config = RangeWidgetConfig(x = original.x, y = newY, min = min, max = max, width = widgetWidth),
+                    onValueChanged = { newValue ->
+                        typedValue.set(newValue)
+                        saveModuleConfiguration()
+                    }
+                )
+            }
+            is IntSettingWidget -> {
+                val typedValue = value as Value<Int>
+                val (min, max) = getRangeForValue(value, 0, 1000)
+                IntSettingWidget(
+                    name = original.name,
+                    value = original.value,
+                    config = IntRangeWidgetConfig(x = original.x, y = newY, min = min, max = max, width = widgetWidth),
+                    onValueChanged = { newValue ->
+                        typedValue.set(newValue)
+                        saveModuleConfiguration()
+                    }
+                )
+            }
+            is TextSettingWidget -> {
+                val typedValue = value as Value<String>
+                TextSettingWidget(
+                    name = original.name,
+                    value = original.value,
+                    config = WidgetConfig(x = original.x, y = newY, width = widgetWidth),
+                    onValueChanged = { newValue ->
+                        typedValue.setByString(newValue)
+                        saveModuleConfiguration()
+                    }
+                )
+            }
+            is EnumSettingWidget -> {
+                val typedValue = value as ChooseListValue<*>
+                EnumSettingWidget(
+                    name = original.name,
+                    value = original.value,
+                    choices = original.choices,
+                    config = WidgetConfig(x = original.x, y = newY, width = widgetWidth),
+                    onValueChanged = { choiceName ->
+                        typedValue.setByString(choiceName)
+                        saveModuleConfiguration()
+                    }
+                )
+            }
             else -> original
         }
     }
