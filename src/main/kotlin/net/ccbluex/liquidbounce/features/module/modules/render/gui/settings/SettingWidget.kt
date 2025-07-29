@@ -423,7 +423,7 @@ class EnumSettingWidget(
     private val onValueChanged: (String) -> Unit = {}
 ) : SettingWidget<String>(name, value, config.x, config.y, config.width, config.height) {
     
-    private var isDropdownOpen = false
+    var isDropdownOpen = false
     
     override fun render(context: DrawContext, mouseX: Int, mouseY: Int, isHovered: Boolean) {
         renderBackground(context, isHovered)
