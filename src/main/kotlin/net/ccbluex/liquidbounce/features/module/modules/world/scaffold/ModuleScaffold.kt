@@ -152,7 +152,7 @@ object ModuleScaffold : ClientModule("Scaffold", Category.WORLD) {
             ScaffoldTowerPulldown,
             ScaffoldTowerKarhu,
             ScaffoldTowerVulcan,
-            ScaffoldTowerHypixel
+            ScaffoldTowerHypixelFast
         )
     }
 

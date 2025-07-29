@@ -28,7 +28,7 @@ import net.ccbluex.liquidbounce.utils.entity.moving
 import net.ccbluex.liquidbounce.utils.entity.withStrafe
 import net.minecraft.util.math.BlockPos
 
-object ScaffoldTowerHypixel : ScaffoldTower("Hypixel") {
+object ScaffoldTowerHypixelFast : ScaffoldTower("HypixelFast") {
 
     @Suppress("unused")
     private val tickHandler = tickHandler {
