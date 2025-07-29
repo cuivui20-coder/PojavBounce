@@ -38,7 +38,7 @@ import kotlin.math.min
 /**
  * Popup widget that shows module settings next to the module in the ClickGUI
  */
-@Suppress("TooManyFunctions")
+@Suppress("TooManyFunctions", "LargeClass")
 class ModuleSettingsPopup(
     private val module: ClientModule,
     private val moduleX: Int,
@@ -474,10 +474,7 @@ class ModuleSettingsPopup(
         val intMouseY = mouseY.toInt()
         
         // Check close button click
-        val closeButtonX = x + POPUP_WIDTH - 16
-        val closeButtonY = y + 4
-        if (intMouseX >= closeButtonX && intMouseX <= closeButtonX + 12 &&
-            intMouseY >= closeButtonY && intMouseY <= closeButtonY + 12) {
+        if (isCloseButtonClicked(intMouseX, intMouseY)) {
             hide()
             return true
         }
@@ -489,44 +486,67 @@ class ModuleSettingsPopup(
         }
 
         // Handle open dropdown first - it's modal
+        val dropdownHandled = handleOpenDropdownClick(mouseX, mouseY, button)
+        if (dropdownHandled) return true
+        
+        // Handle widget clicks
+        val foundWidgetClick = handleWidgetClicks(mouseX, mouseY, button)
+        
+        // Handle scroll dragging for non-widget clicks  
+        val scrollHandled = if (!foundWidgetClick && button == 0) {
+            handleScrollClick(intMouseY, mouseY)
+        } else {
+            false
+        }
+        
+        return foundWidgetClick || scrollHandled || true // Consume click if inside popup
+    }
+
+    private fun isCloseButtonClicked(mouseX: Int, mouseY: Int): Boolean {
+        val closeButtonX = x + POPUP_WIDTH - 16
+        val closeButtonY = y + 4
+        return mouseX >= closeButtonX && mouseX <= closeButtonX + 12 &&
+               mouseY >= closeButtonY && mouseY <= closeButtonY + 12
+    }
+
+    private fun handleOpenDropdownClick(mouseX: Double, mouseY: Double, button: Int): Boolean {
         openDropdown?.let { dropdown ->
             // Pass click to dropdown
             if (dropdown.mouseClicked(mouseX, mouseY + scrollOffset, button)) {
                 // Check if dropdown closed itself
-                if (!dropdown.expanded) {
+                if (!dropdown.isDropdownOpen) {
                     openDropdown = null
                 }
             } else {
                 // Click was outside the active dropdown, so close it
-                dropdown.expanded = false
+                dropdown.isDropdownOpen = false
                 openDropdown = null
             }
             return true
         }
-        
-        // Handle widget clicks
-        var foundWidgetClick = false
+        return false
+    }
+
+    private fun handleWidgetClicks(mouseX: Double, mouseY: Double, button: Int): Boolean {
         for (widget in settingWidgets) {
             if (handleWidgetClick(widget, mouseX, mouseY, button)) {
-                if (widget is EnumSettingWidget && widget.expanded) {
+                if (widget is EnumSettingWidget && widget.isDropdownOpen) {
                     openDropdown = widget
                 }
-                foundWidgetClick = true
-                break
-            }
-        }
-        
-        if (!foundWidgetClick && button == 0) {
-            // Check if clicking in scrollable area (below title bar, not on widgets)
-            val titleBarHeight = 20
-            if (intMouseY > y + titleBarHeight && canScroll()) {
-                isScrollDragging = true
-                scrollDragStartY = mouseY
                 return true
             }
         }
-        
-        return foundWidgetClick || true // Consume click if inside popup
+        return false
+    }
+
+    private fun handleScrollClick(mouseY: Int, originalMouseY: Double): Boolean {
+        val titleBarHeight = 20
+        if (mouseY > y + titleBarHeight && canScroll()) {
+            isScrollDragging = true
+            scrollDragStartY = originalMouseY
+            return true
+        }
+        return false
     }
     
     private fun handleWidgetClick(widget: SettingWidget<*>, mouseX: Double, mouseY: Double, button: Int): Boolean {
@@ -689,7 +709,12 @@ class ModuleSettingsPopup(
         }
     }
 
-    private fun createSectionHeaderWidget(value: Configurable, widgetX: Int, widgetY: Int, widgetWidth: Int): SectionHeaderWidget {
+    private fun createSectionHeaderWidget(
+        value: Configurable, 
+        widgetX: Int, 
+        widgetY: Int, 
+        widgetWidth: Int
+    ): SectionHeaderWidget {
         return SectionHeaderWidget(
             name = value.name,
             isExpanded = sections.getOrDefault(value.name, true),
