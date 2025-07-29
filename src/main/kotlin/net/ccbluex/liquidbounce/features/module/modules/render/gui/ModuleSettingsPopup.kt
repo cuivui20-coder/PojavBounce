@@ -22,16 +22,14 @@ import net.ccbluex.liquidbounce.config.ConfigSystem
 import net.ccbluex.liquidbounce.config.types.*
 import net.ccbluex.liquidbounce.config.types.nesting.Configurable
 import net.ccbluex.liquidbounce.features.module.ClientModule
-import net.ccbluex.liquidbounce.features.module.modules.render.gui.settings.BooleanSettingWidget
-import net.ccbluex.liquidbounce.features.module.modules.render.gui.settings.FloatSettingWidget
-import net.ccbluex.liquidbounce.features.module.modules.render.gui.settings.IntSettingWidget
-import net.ccbluex.liquidbounce.features.module.modules.render.gui.settings.SettingWidget
-import net.ccbluex.liquidbounce.features.module.modules.render.gui.settings.WidgetConfig
-import net.ccbluex.liquidbounce.features.module.modules.render.gui.settings.RangeWidgetConfig
-import net.ccbluex.liquidbounce.features.module.modules.render.gui.settings.IntRangeWidgetConfig
-import net.ccbluex.liquidbounce.features.module.modules.render.gui.settings.TextSettingWidget
-import net.ccbluex.liquidbounce.features.module.modules.render.gui.settings.EnumSettingWidget
+import net.ccbluex.liquidbounce.features.module.modules.render.gui.settings.*
+import net.ccbluex.liquidbounce.render.engine.type.Color4b
 import net.ccbluex.liquidbounce.utils.client.mc
+import net.ccbluex.liquidbounce.utils.input.InputBind
+import net.ccbluex.liquidbounce.utils.input.InputUtil
+import net.minecraft.block.Block
+import net.minecraft.item.Item
+import net.minecraft.registry.Registries
 import net.minecraft.client.gui.DrawContext
 import kotlin.math.max
 import kotlin.math.min
@@ -181,6 +179,11 @@ class ModuleSettingsPopup(
             ValueType.CHOICE -> createChoiceConfigurableWidget(value, widgetX, widgetY, widgetWidth)
             ValueType.INT_RANGE -> createIntRangeAsTextWidget(value, widgetX, widgetY, widgetWidth)
             ValueType.FLOAT_RANGE -> createFloatRangeAsTextWidget(value, widgetX, widgetY, widgetWidth)
+            ValueType.BIND -> createBindWidget(value, widgetX, widgetY, widgetWidth)
+            ValueType.KEY -> createKeyWidget(value, widgetX, widgetY, widgetWidth)
+            ValueType.LIST, ValueType.BLOCKS -> createListWidget(value, widgetX, widgetY, widgetWidth)
+            ValueType.COLOR -> createColorWidget(value, widgetX, widgetY, widgetWidth)
+            ValueType.MULTI_CHOOSE -> createMultiChooseWidget(value, widgetX, widgetY, widgetWidth)
             else -> null
         }
     }
@@ -634,5 +637,120 @@ class ModuleSettingsPopup(
         } catch (e: Exception) {
             println("Error saving configuration for module ${module.name}: ${e.message}")
         }
+    }
+
+    @Suppress("UNCHECKED_CAST")
+    private fun createBindWidget(value: Value<*>, widgetX: Int, widgetY: Int, widgetWidth: Int): TextSettingWidget {
+        val typedValue = value as Value<InputBind>
+        return TextSettingWidget(
+            name = value.name,
+            value = typedValue.get().boundKey.translationKey,
+            config = WidgetConfig(x = widgetX, y = widgetY, width = widgetWidth),
+            onValueChanged = { newValue ->
+                try {
+                    value.setByString(newValue)
+                    saveModuleConfiguration()
+                } catch (e: Exception) {
+                    // Ignore invalid input
+                }
+            }
+        )
+    }
+
+    @Suppress("UNCHECKED_CAST")
+    private fun createKeyWidget(value: Value<*>, widgetX: Int, widgetY: Int, widgetWidth: Int): TextSettingWidget {
+        val typedValue = value as Value<InputUtil.Key>
+        return TextSettingWidget(
+            name = value.name,
+            value = typedValue.get().translationKey,
+            config = WidgetConfig(x = widgetX, y = widgetY, width = widgetWidth),
+            onValueChanged = { newValue ->
+                try {
+                    value.setByString(newValue)
+                    saveModuleConfiguration()
+                } catch (e: Exception) {
+                    // Ignore invalid input
+                }
+            }
+        )
+    }
+
+    @Suppress("UNCHECKED_CAST")
+    private fun createListWidget(value: Value<*>, widgetX: Int, widgetY: Int, widgetWidth: Int): TextSettingWidget {
+        val typedValue = value as ListValue<*, *>
+        val valueString = if (typedValue is RegistryListValue<*, *>) {
+            val collection = typedValue.get() as Collection<Any>
+            try {
+                when (typedValue.innerType) {
+                    Block::class.java -> {
+                        val registry = Registries.BLOCK
+                        collection.joinToString(", ") { registry.getId(it as Block).toString() }
+                    }
+                    Item::class.java -> {
+                        val registry = Registries.ITEM
+                        collection.joinToString(", ") { registry.getId(it as Item).toString() }
+                    }
+                    else -> collection.joinToString(", ")
+                }
+            } catch (e: Exception) {
+                collection.joinToString(", ")
+            }
+        } else {
+            typedValue.get().joinToString(", ")
+        }
+
+        return TextSettingWidget(
+            name = value.name,
+            value = valueString,
+            config = WidgetConfig(x = widgetX, y = widgetY, width = widgetWidth),
+            onValueChanged = { newValue ->
+                try {
+                    value.setByString(newValue)
+                    saveModuleConfiguration()
+                } catch (e: Exception) {
+                    // Could show an error, for now ignore invalid input.
+                }
+            }
+        )
+    }
+
+    @Suppress("UNCHECKED_CAST")
+    private fun createColorWidget(value: Value<*>, widgetX: Int, widgetY: Int, widgetWidth: Int): TextSettingWidget {
+        val typedValue = value as Value<Color4b>
+        return TextSettingWidget(
+            name = value.name,
+            value = "#" + typedValue.get().toARGB().toUInt().toString(16),
+            config = WidgetConfig(x = widgetX, y = widgetY, width = widgetWidth),
+            onValueChanged = { newValue ->
+                try {
+                    value.setByString(newValue)
+                    saveModuleConfiguration()
+                } catch (e: Exception) {
+                    // Could show an error, for now ignore invalid input.
+                }
+            }
+        )
+    }
+
+    @Suppress("UNCHECKED_CAST")
+    private fun createMultiChooseWidget(value: Value<*>, widgetX: Int, widgetY: Int, widgetWidth: Int): TextSettingWidget {
+        val typedValue = value as MultiChooseListValue<*>
+        val valueString = typedValue.get().joinToString(", ") {
+            if (it is Enum<*>) it.name else it.toString()
+        }
+
+        return TextSettingWidget(
+            name = value.name,
+            value = valueString,
+            config = WidgetConfig(x = widgetX, y = widgetY, width = widgetWidth),
+            onValueChanged = { newValue ->
+                try {
+                    value.setByString(newValue)
+                    saveModuleConfiguration()
+                } catch (e: Exception) {
+                    // Could show an error, for now ignore invalid input.
+                }
+            }
+        )
     }
 }
