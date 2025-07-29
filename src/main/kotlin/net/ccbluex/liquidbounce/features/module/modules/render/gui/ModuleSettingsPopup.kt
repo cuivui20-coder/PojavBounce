@@ -171,6 +171,8 @@ class ModuleSettingsPopup(
             ValueType.INT -> createIntWidget(value, widgetX, widgetY, widgetWidth)
             ValueType.TEXT -> createTextWidget(value, widgetX, widgetY, widgetWidth)
             ValueType.CHOOSE -> createChooseWidget(value, widgetX, widgetY, widgetWidth)
+            ValueType.INT_RANGE -> createIntRangeAsTextWidget(value, widgetX, widgetY, widgetWidth)
+            ValueType.FLOAT_RANGE -> createFloatRangeAsTextWidget(value, widgetX, widgetY, widgetWidth)
             else -> null
         }
     }
@@ -275,6 +277,42 @@ class ModuleSettingsPopup(
             println("Warning: Failed to extract range from value '${value.name}': ${e.message}")
             Pair(defaultMin, defaultMax)
         }
+    }
+
+    @Suppress("UNCHECKED_CAST")
+    private fun createIntRangeAsTextWidget(value: Value<*>, widgetX: Int, widgetY: Int, widgetWidth: Int): TextSettingWidget {
+        val typedValue = value as Value<IntRange>
+        return TextSettingWidget(
+            name = value.name,
+            value = typedValue.get().let { "${it.first}..${it.last}" },
+            config = WidgetConfig(x = widgetX, y = widgetY, width = widgetWidth),
+            onValueChanged = { newValue ->
+                try {
+                    value.setByString(newValue)
+                    saveModuleConfiguration()
+                } catch (e: Exception) {
+                    // Could show an error, for now ignore invalid input.
+                }
+            }
+        )
+    }
+
+    @Suppress("UNCHECKED_CAST")
+    private fun createFloatRangeAsTextWidget(value: Value<*>, widgetX: Int, widgetY: Int, widgetWidth: Int): TextSettingWidget {
+        val typedValue = value as Value<ClosedFloatingPointRange<Float>>
+        return TextSettingWidget(
+            name = value.name,
+            value = typedValue.get().let { "${it.start}..${it.endInclusive}" },
+            config = WidgetConfig(x = widgetX, y = widgetY, width = widgetWidth),
+            onValueChanged = { newValue ->
+                try {
+                    value.setByString(newValue)
+                    saveModuleConfiguration()
+                } catch (e: Exception) {
+                    // Could show an error, for now ignore invalid input.
+                }
+            }
+        )
     }
     
     /**
