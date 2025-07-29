@@ -26,7 +26,7 @@ import net.ccbluex.liquidbounce.features.module.modules.render.gui.settings.*
 import net.ccbluex.liquidbounce.render.engine.type.Color4b
 import net.ccbluex.liquidbounce.utils.client.mc
 import net.ccbluex.liquidbounce.utils.input.InputBind
-import net.ccbluex.liquidbounce.utils.input.InputUtil
+import net.minecraft.client.util.InputUtil
 import net.minecraft.block.Block
 import net.minecraft.item.Item
 import net.minecraft.registry.Registries
@@ -181,7 +181,7 @@ class ModuleSettingsPopup(
             ValueType.FLOAT_RANGE -> createFloatRangeAsTextWidget(value, widgetX, widgetY, widgetWidth)
             ValueType.BIND -> createBindWidget(value, widgetX, widgetY, widgetWidth)
             ValueType.KEY -> createKeyWidget(value, widgetX, widgetY, widgetWidth)
-            ValueType.LIST, ValueType.BLOCKS -> createListWidget(value, widgetX, widgetY, widgetWidth)
+            ValueType.LIST, ValueType.BLOCK -> createListWidget(value, widgetX, widgetY, widgetWidth)
             ValueType.COLOR -> createColorWidget(value, widgetX, widgetY, widgetWidth)
             ValueType.MULTI_CHOOSE -> createMultiChooseWidget(value, widgetX, widgetY, widgetWidth)
             else -> null

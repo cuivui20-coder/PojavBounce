@@ -468,9 +468,9 @@ object ModuleScaffold : ClientModule("Scaffold", Category.WORLD) {
             arrayOf(Hand.MAIN_HAND, Hand.OFF_HAND).firstOrNull { isValidBlock(player.getStackInHand(it)) }
 
         if (simulatePlacementAttempts(currentCrosshairTarget, suitableHand) && player.moving
-            && simulatePlacementClicker.isClickTick
+            && this@ModuleScaffold.simulatePlacementClicker.isClickTick
         ) {
-            simulatePlacementClicker.click {
+            this@ModuleScaffold.simulatePlacementClicker.click {
                 doPlacement(currentCrosshairTarget!!, suitableHand!!, swingMode = swingMode)
                 true
             }
@@ -516,7 +516,7 @@ object ModuleScaffold : ClientModule("Scaffold", Category.WORLD) {
                 RotationManager.setRotationTarget(
                     currentRotation,
                     considerInventory = considerInventory,
-                    configurable = RotationsConfigurable(this),
+                    configurable = RotationsConfigurable(this@ModuleScaffold),
                     provider = this@ModuleScaffold,
                     priority = Priority.IMPORTANT_FOR_PLAYER_LIFE
                 )
