@@ -18,10 +18,21 @@
  */
 package net.ccbluex.liquidbounce.features.module.modules.render.gui
 
+import net.ccbluex.liquidbounce.config.ConfigSystem
+import net.ccbluex.liquidbounce.config.types.*
+import net.ccbluex.liquidbounce.config.types.nesting.Configurable
+import net.ccbluex.liquidbounce.features.module.modules.render.gui.settings.*
+import net.ccbluex.liquidbounce.lang.LanguageManager
+import net.ccbluex.liquidbounce.lang.translation
+import net.ccbluex.liquidbounce.render.engine.type.Color4b
 import net.ccbluex.liquidbounce.features.module.Category
 import net.ccbluex.liquidbounce.features.module.ClientModule
 import net.ccbluex.liquidbounce.utils.client.mc
+import net.ccbluex.liquidbounce.utils.input.InputBind
+import net.minecraft.block.Block
 import net.minecraft.client.gui.DrawContext
+import net.minecraft.item.Item
+import net.minecraft.registry.Registries
 import kotlin.math.max
 import kotlin.math.min
 
@@ -43,7 +54,6 @@ class ClickGuiPanel(
     val category: Category,
     private val allModules: List<ClientModule>,
     val config: PanelConfig,
-    private val onOpenSettings: (ClientModule, Int, Int, Int, Int) -> Unit = { _, _, _, _, _ -> },
     private val onPanelStateChanged: (Category, Int, Int, Boolean) -> Unit = { _, _, _, _ -> }
 ) {
     var x: Int
@@ -67,16 +77,32 @@ class ClickGuiPanel(
     private var scrollDragStartY = 0.0
     private var filteredModules = allModules
     var hoveredModuleDescription: String? = null
-    private val moduleHeight get() = GuiConfig.moduleHeight
+    private val moduleHeight get() = GuiConfig.moduleHeight + 4 // Add padding
     private val headerHeight get() = GuiConfig.headerHeight
+
+    private val expandedModules = mutableMapOf<ClientModule, Boolean>()
+    private val moduleSettingWidgets = mutableMapOf<ClientModule, List<SettingWidget<*>>>()
+    private var openDropdown: EnumSettingWidget? = null
+
+    companion object {
+        private const val SETTING_HEIGHT = 18
+        private const val SETTING_SPACING = 2
+    }
     
     @Suppress("UnusedParameter")
     fun render(context: DrawContext, mouseX: Int, mouseY: Int, delta: Float) {
         hoveredModuleDescription = null // Reset every frame
 
         // Calculate actual height based on expansion state
+        val modulesAndSettingsHeight = filteredModules.sumOf { module ->
+            var height = moduleHeight
+            if (expandedModules.getOrDefault(module, false)) {
+                height += (moduleSettingWidgets[module]?.size ?: 0) * (SETTING_HEIGHT + SETTING_SPACING)
+            }
+            height
+        }
         val actualHeight = if (expanded) {
-            headerHeight + min(filteredModules.size * moduleHeight, GuiConfig.panelMaxHeight)
+            headerHeight + min(modulesAndSettingsHeight, GuiConfig.panelMaxHeight)
         } else {
             headerHeight
         }
@@ -112,7 +138,14 @@ class ClickGuiPanel(
     
     private fun renderModules(context: DrawContext, mouseX: Int, mouseY: Int) {
         val moduleAreaY = y + headerHeight
-        val moduleAreaHeight = min(filteredModules.size * moduleHeight, GuiConfig.panelMaxHeight)
+        val totalContentHeight = filteredModules.sumOf { module ->
+            var height = moduleHeight
+            if (expandedModules.getOrDefault(module, false)) {
+                height += (moduleSettingWidgets[module]?.size ?: 0) * (SETTING_HEIGHT + SETTING_SPACING)
+            }
+            height
+        }
+        val moduleAreaHeight = min(totalContentHeight, GuiConfig.panelMaxHeight)
         
         // Clip rendering to module area
         context.enableScissor(x, moduleAreaY, x + width, moduleAreaY + moduleAreaHeight)
@@ -120,6 +153,8 @@ class ClickGuiPanel(
         var currentY = moduleAreaY - scrollOffset
         
         for (module in filteredModules) {
+            if (currentY >= moduleAreaY + moduleAreaHeight) break // Stop rendering if below visible area
+
             if (currentY + moduleHeight > moduleAreaY && currentY < moduleAreaY + moduleAreaHeight) {
                 renderModule(ModuleRenderData(context, module, x, currentY, mouseX, mouseY))
             }
@@ -128,10 +163,30 @@ class ClickGuiPanel(
         
         context.disableScissor()
         
-        // Scrollbar if needed
-        if (filteredModules.size * moduleHeight > GuiConfig.panelMaxHeight) {
-            renderScrollbar(context, moduleAreaY, moduleAreaHeight)
+        // Render open dropdown outside scissor
+        openDropdown?.let { dropdown ->
+            context.matrices.push()
+            context.matrices.translate(0.0, -scrollOffset.toDouble(), 0.0)
+            dropdown.render(context, mouseX, mouseY + scrollOffset, true)
+            context.matrices.pop()
         }
+
+        // Scrollbar if needed
+        if (totalContentHeight > moduleAreaHeight) {
+            renderScrollbar(context, moduleAreaY, moduleAreaHeight, totalContentHeight)
+        }
+    }
+    
+    private fun renderModuleSettings(context: DrawContext, module: ClientModule, startY: Int, mouseX: Int, mouseY: Int): Int {
+        var settingsY = startY
+        val widgets = moduleSettingWidgets[module] ?: return 0
+
+        for (widget in widgets) {
+            widget.y = settingsY
+            widget.render(context, mouseX, mouseY, widget.isMouseOver(mouseX, mouseY))
+            settingsY += SETTING_HEIGHT + SETTING_SPACING
+        }
+        return settingsY - startY
     }
     
     /**
@@ -193,13 +248,13 @@ class ClickGuiPanel(
         }
     }
     
-    private fun renderScrollbar(context: DrawContext, moduleAreaY: Int, moduleAreaHeight: Int) {
+    private fun renderScrollbar(context: DrawContext, moduleAreaY: Int, moduleAreaHeight: Int, totalHeight: Int) {
         val scrollbarX = x + width - 5
         val scrollbarWidth = 3
         
         // Scrollbar track
         context.fill(
-            scrollbarX, 
+            scrollbarX,
             moduleAreaY, 
             scrollbarX + scrollbarWidth, 
             moduleAreaY + moduleAreaHeight, 
@@ -207,7 +262,6 @@ class ClickGuiPanel(
         )
         
         // Scrollbar thumb
-        val totalHeight = filteredModules.size * moduleHeight
         val thumbHeight = max(10, (moduleAreaHeight * moduleAreaHeight) / totalHeight)
         val thumbY = moduleAreaY + 
             (scrollOffset * (moduleAreaHeight - thumbHeight)) / (totalHeight - moduleAreaHeight)
@@ -224,6 +278,11 @@ class ClickGuiPanel(
         val intMouseX = mouseX.toInt()
         val intMouseY = mouseY.toInt()
         
+        // Handle open dropdown first
+        if (handleOpenDropdownClick(mouseX, mouseY, button)) {
+            return true
+        }
+
         if (!isClickWithinBounds(intMouseX, intMouseY)) {
             return false
         }
@@ -233,7 +292,7 @@ class ClickGuiPanel(
         }
         
         if (isModuleAreaClick(intMouseY)) {
-            return handleModuleClick(intMouseX, intMouseY, button)
+            return handleModuleAreaClick(intMouseX, intMouseY, button)
         }
         
         return false
@@ -272,49 +331,73 @@ class ClickGuiPanel(
         }
     }
     
-    private fun handleModuleClick(mouseX: Int, mouseY: Int, button: Int): Boolean {
-        // First priority: Check if click is on scrollbar area
-        if (canScroll() && button == 0) {
-            val scrollbarX = x + width - 5
-            val scrollbarWidth = 3
-            val moduleAreaY = y + headerHeight
-            val moduleAreaHeight = min(filteredModules.size * moduleHeight, GuiConfig.panelMaxHeight)
-            
-            // Expanded scrollbar hit area for easier use
-            val expandedScrollbarX = x + width - 8
-            val expandedScrollbarWidth = 8
-            
-            if (mouseX >= expandedScrollbarX && mouseX <= expandedScrollbarX + expandedScrollbarWidth && 
-                mouseY >= moduleAreaY && mouseY <= moduleAreaY + moduleAreaHeight) {
-                
-                // Start scroll dragging from scrollbar
-                isScrollDragging = true
-                scrollDragStartY = mouseY.toDouble()
-                return true
+    private fun handleModuleAreaClick(mouseX: Int, mouseY: Int, button: Int): Boolean {
+        var currentY = y + headerHeight - scrollOffset
+        for (module in filteredModules) {
+            val moduleBottomY = currentY + moduleHeight
+
+            // Check if click is on the module button itself
+            if (mouseY >= currentY && mouseY < moduleBottomY) {
+                if (handleSpecificModuleClick(module, button)) return true
+            }
+
+            currentY = moduleBottomY
+
+            // Check for clicks on settings if expanded
+            if (expandedModules.getOrDefault(module, false)) {
+                val widgets = moduleSettingWidgets[module]
+                if (widgets != null) {
+                    for (widget in widgets) {
+                        widget.y = currentY // Temporarily set y for hit-testing
+                        if (widget.isMouseOver(mouseX, mouseY + scrollOffset)) {
+                            if (handleWidgetClick(widget, mouseX.toDouble(), (mouseY + scrollOffset).toDouble(), button)) {
+                                return true
+                            }
+                        }
+                        currentY += SETTING_HEIGHT + SETTING_SPACING
+                    }
+                }
             }
         }
-        
-        // Second priority: Check module clicks
-        val moduleIndex = (mouseY - y - headerHeight + scrollOffset) / moduleHeight
-        val isValidModuleIndex = moduleIndex >= 0 && moduleIndex < filteredModules.size
-        
-        if (isValidModuleIndex) {
-            val module = filteredModules[moduleIndex]
-            val result = handleSpecificModuleClick(module, moduleIndex, button)
-            if (result) return true
-        }
-        
-        // Third priority: Handle empty area scrolling
-        if (button == 0 && canScroll()) {
+
+        // If no widget was clicked but we are in the module area, start scrolling
+        if (button == 0) {
             isScrollDragging = true
             scrollDragStartY = mouseY.toDouble()
             return true
         }
-        
         return false
     }
-    
-    private fun handleSpecificModuleClick(module: ClientModule, moduleIndex: Int, button: Int): Boolean {
+
+    private fun handleWidgetClick(widget: SettingWidget<*>, mouseX: Double, mouseY: Double, button: Int): Boolean {
+        if (widget.mouseClicked(mouseX, mouseY, button)) {
+            if (widget is SectionHeaderWidget) {
+                // This logic is now inside the panel, not a popup
+            }
+            if (widget is EnumSettingWidget && widget.isDropdownOpen) {
+                openDropdown = widget
+            }
+            return true
+        }
+        return false
+    }
+
+    private fun handleOpenDropdownClick(mouseX: Double, mouseY: Double, button: Int): Boolean {
+        openDropdown?.let { dropdown ->
+            if (dropdown.mouseClicked(mouseX, mouseY + scrollOffset, button)) {
+                if (!dropdown.isDropdownOpen) {
+                    openDropdown = null
+                }
+            } else {
+                dropdown.isDropdownOpen = false
+                openDropdown = null
+            }
+            return true
+        }
+        return false
+    }
+
+    private fun handleSpecificModuleClick(module: ClientModule, button: Int): Boolean {
         return when (button) {
             0 -> {
                 // Toggle module
@@ -323,9 +406,13 @@ class ClickGuiPanel(
             }
             1 -> {
                 // Open module settings popup next to the module
-                val moduleX = x
-                val moduleY = y + headerHeight + moduleIndex * moduleHeight - scrollOffset
-                onOpenSettings(module, moduleX, moduleY, width, moduleHeight)
+                if (moduleHasSettings(module)) {
+                    val isExpanded = expandedModules.getOrDefault(module, false)
+                    if (!isExpanded) {
+                        initializeSettingsWidgets(module)
+                    }
+                    expandedModules[module] = !isExpanded
+                }
                 true
             }
             else -> false
@@ -351,16 +438,31 @@ class ClickGuiPanel(
         if (isScrollDragging && button == 0) {
             // Handle scroll dragging
             val deltaY = mouseY - scrollDragStartY
-            val scrollSensitivity = 2.0 // How much to scroll per pixel of mouse movement
-            val scrollDelta = (deltaY * scrollSensitivity).toInt()
+            val scrollSensitivity = 1.0 // Adjusted sensitivity
+            val scrollDelta = (deltaY * scrollSensitivity)
             
-            val maxScroll = max(0, filteredModules.size * moduleHeight - GuiConfig.panelMaxHeight)
-            scrollOffset = max(0, min(maxScroll, scrollOffset - scrollDelta))
+            val totalContentHeight = filteredModules.sumOf { module ->
+                var height = moduleHeight
+                if (expandedModules.getOrDefault(module, false)) {
+                    height += (moduleSettingWidgets[module]?.size ?: 0) * (SETTING_HEIGHT + SETTING_SPACING)
+                }
+                height
+            }
+            val maxScroll = max(0, totalContentHeight - GuiConfig.panelMaxHeight)
+            scrollOffset = max(0, min(maxScroll, (scrollOffset - scrollDelta).toInt()))
             
             scrollDragStartY = mouseY
             return true
         }
-        
+
+        // Delegate drag to setting widgets
+        moduleSettingWidgets.values.flatten().forEach { widget ->
+            if (widget is FloatSettingWidget || widget is IntSettingWidget) {
+                if ((widget as SettingWidget<*>).isMouseOver(mouseX.toInt(), (mouseY + scrollOffset).toInt())) {
+                    widget.mouseDragged(mouseX, mouseY + scrollOffset, button)
+                }
+            }
+        }
         return false
     }
     
@@ -368,6 +470,10 @@ class ClickGuiPanel(
     fun mouseReleased(mouseX: Double, mouseY: Double, button: Int) {
         isDragging = false
         isScrollDragging = false
+        moduleSettingWidgets.values.flatten().forEach { widget ->
+            if (widget is FloatSettingWidget) widget.mouseReleased(mouseX, mouseY + scrollOffset, button)
+            if (widget is IntSettingWidget) widget.mouseReleased(mouseX, mouseY + scrollOffset, button)
+        }
     }
     
     fun mouseScrolled(mouseX: Double, mouseY: Double, amount: Double): Boolean {
@@ -376,33 +482,18 @@ class ClickGuiPanel(
         val intMouseX = mouseX.toInt()
         val intMouseY = mouseY.toInt()
         
-        // First priority: Check if mouse is over scrollbar area (if scrollable content exists)
-        if (canScroll()) {
-            val scrollbarX = x + width - 5
-            val scrollbarWidth = 3
-            val moduleAreaY = y + headerHeight
-            val moduleAreaHeight = min(filteredModules.size * moduleHeight, GuiConfig.panelMaxHeight)
-            
-            // Expanded scrollbar hit area for easier use
-            val expandedScrollbarX = x + width - 8
-            val expandedScrollbarWidth = 8
-            
-            if (intMouseX >= expandedScrollbarX && intMouseX <= expandedScrollbarX + expandedScrollbarWidth && 
-                intMouseY >= moduleAreaY && intMouseY <= moduleAreaY + moduleAreaHeight) {
-                
-                val maxScroll = max(0, filteredModules.size * moduleHeight - GuiConfig.panelMaxHeight)
-                scrollOffset = max(0, min(maxScroll, scrollOffset - (amount * 30).toInt()))
-                return true
-            }
-        }
-        
-        // Second priority: Check if mouse is over module area (for content scrolling)
-        if (intMouseX >= x && intMouseX <= x + width && 
-            intMouseY >= y + headerHeight && intMouseY <= y + headerHeight + GuiConfig.panelMaxHeight) {
-            
+        if (intMouseX >= x && intMouseX <= x + width &&
+            intMouseY >= y + headerHeight && intMouseY <= y + height) {
             if (canScroll()) {
-                val maxScroll = max(0, filteredModules.size * moduleHeight - GuiConfig.panelMaxHeight)
-                scrollOffset = max(0, min(maxScroll, scrollOffset - (amount * 30).toInt()))
+                val totalContentHeight = filteredModules.sumOf { module ->
+                    var height = moduleHeight
+                    if (expandedModules.getOrDefault(module, false)) {
+                        height += (moduleSettingWidgets[module]?.size ?: 0) * (SETTING_HEIGHT + SETTING_SPACING)
+                    }
+                    height
+                }
+                val maxScroll = max(0, totalContentHeight - GuiConfig.panelMaxHeight)
+                scrollOffset = max(0, min(maxScroll, scrollOffset - (amount * 20).toInt()))
                 return true
             }
         }
@@ -434,13 +525,284 @@ class ClickGuiPanel(
      * Check if content can be scrolled (i.e., there's more content than visible area)
      */
     private fun canScroll(): Boolean {
-        return expanded && filteredModules.size * moduleHeight > GuiConfig.panelMaxHeight
+        if (!expanded) return false
+        val totalContentHeight = filteredModules.sumOf { module ->
+            var height = moduleHeight
+            if (expandedModules.getOrDefault(module, false)) {
+                height += (moduleSettingWidgets[module]?.size ?: 0) * (SETTING_HEIGHT + SETTING_SPACING)
+            }
+            height
+        }
+        return totalContentHeight > GuiConfig.panelMaxHeight
     }
     
     /**
      * Get the expanded state of the panel
      */
     fun getExpanded(): Boolean = expanded
+
+    // WIDGET CREATION AND MANAGEMENT LOGIC (from ModuleSettingsPopup)
+
+    private fun initializeSettingsWidgets(module: ClientModule) {
+        if (moduleSettingWidgets.containsKey(module)) return
+
+        val widgets = mutableListOf<SettingWidget<*>>()
+        val valueCreators = mutableListOf<Pair<Value<*>, Int>>()
+        collectValues(module, valueCreators, 0)
+
+        var currentY = 0 // y is set dynamically during render
+        for ((value, indent) in valueCreators) {
+            val widgetX = this.x + 10 + indent * 10
+            val widgetWidth = this.width - 20 - indent * 10
+            val widget = createWidgetForValue(value, widgetX, currentY, widgetWidth)
+            if (widget != null) {
+                widgets.add(widget)
+                currentY += SETTING_HEIGHT + SETTING_SPACING
+            }
+        }
+        moduleSettingWidgets[module] = widgets
+    }
+
+    private fun collectValues(configurable: Configurable, list: MutableList<Pair<Value<*>, Int>>, indent: Int) {
+        for (value in configurable.inner) {
+            list.add(Pair(value, indent))
+
+            if (value is net.ccbluex.liquidbounce.config.types.nesting.ChoiceConfigurable<*>) {
+                collectValues(value.activeChoice, list, indent + 1)
+            } else if (value is Configurable) {
+                // Could add section support here if needed
+            }
+        }
+    }
+
+    @Suppress("UNCHECKED_CAST")
+    private fun createWidgetForValue(value: Value<*>, widgetX: Int, widgetY: Int, widgetWidth: Int): SettingWidget<*>? {
+        return when (value.valueType) {
+            ValueType.BOOLEAN -> createBooleanWidget(value, widgetX, widgetY, widgetWidth)
+            ValueType.FLOAT -> createFloatWidget(value, widgetX, widgetY, widgetWidth)
+            ValueType.INT -> createIntWidget(value, widgetX, widgetY, widgetWidth)
+            ValueType.TEXT -> createTextWidget(value, widgetX, widgetY, widgetWidth)
+            ValueType.CHOOSE -> createChooseWidget(value, widgetX, widgetY, widgetWidth)
+            ValueType.CHOICE -> createChoiceConfigurableWidget(value, widgetX, widgetY, widgetWidth)
+            ValueType.BIND -> createBindWidget(value, widgetX, widgetY, widgetWidth)
+            ValueType.LIST, ValueType.BLOCK -> createListWidget(value, widgetX, widgetY, widgetWidth)
+            ValueType.COLOR -> createColorWidget(value, widgetX, widgetY, widgetWidth)
+            ValueType.MULTI_CHOOSE -> createMultiChooseWidget(value, widgetX, widgetY, widgetWidth)
+            else -> null
+        }
+    }
+
+    @Suppress("UNCHECKED_CAST")
+    private fun createBooleanWidget(value: Value<*>, widgetX: Int, widgetY: Int, widgetWidth: Int): BooleanSettingWidget {
+        val typedValue = value as Value<Boolean>
+        return BooleanSettingWidget(
+            name = value.name,
+            value = typedValue.get(),
+            config = WidgetConfig(x = widgetX, y = widgetY, width = widgetWidth, height = SETTING_HEIGHT),
+            onValueChanged = { newValue ->
+                typedValue.set(newValue)
+                saveModuleConfiguration(value.base as ClientModule)
+            }
+        )
+    }
+
+    @Suppress("UNCHECKED_CAST")
+    private fun createFloatWidget(value: Value<*>, widgetX: Int, widgetY: Int, widgetWidth: Int): FloatSettingWidget {
+        val typedValue = value as Value<Float>
+        val (min, max) = getRangeForValue(value, 0.0f, 10.0f)
+        return FloatSettingWidget(
+            name = value.name,
+            value = typedValue.get(),
+            config = RangeWidgetConfig(x = widgetX, y = widgetY, min = min, max = max, width = widgetWidth, height = SETTING_HEIGHT),
+            onValueChanged = { newValue ->
+                typedValue.set(newValue)
+                saveModuleConfiguration(value.base as ClientModule)
+            }
+        )
+    }
+
+    @Suppress("UNCHECKED_CAST")
+    private fun createIntWidget(value: Value<*>, widgetX: Int, widgetY: Int, widgetWidth: Int): IntSettingWidget {
+        val typedValue = value as Value<Int>
+        val (min, max) = getRangeForValue(value, 0, 1000)
+        return IntSettingWidget(
+            name = value.name,
+            value = typedValue.get(),
+            config = IntRangeWidgetConfig(x = widgetX, y = widgetY, min = min, max = max, width = widgetWidth, height = SETTING_HEIGHT),
+            onValueChanged = { newValue ->
+                typedValue.set(newValue)
+                saveModuleConfiguration(value.base as ClientModule)
+            }
+        )
+    }
+
+    @Suppress("UNCHECKED_CAST")
+    private fun createTextWidget(value: Value<*>, widgetX: Int, widgetY: Int, widgetWidth: Int): TextSettingWidget {
+        val typedValue = value as Value<String>
+        return TextSettingWidget(
+            name = value.name,
+            value = typedValue.get(),
+            config = WidgetConfig(x = widgetX, y = widgetY, width = widgetWidth, height = SETTING_HEIGHT),
+            onValueChanged = { newValue ->
+                value.setByString(newValue)
+                saveModuleConfiguration(value.base as ClientModule)
+            }
+        )
+    }
+
+    @Suppress("UNCHECKED_CAST")
+    private fun createChooseWidget(value: Value<*>, widgetX: Int, widgetY: Int, widgetWidth: Int): EnumSettingWidget {
+        val chooseValue = value as ChooseListValue<*>
+        val currentChoice = chooseValue.get() as NamedChoice
+        val choiceNames = chooseValue.choices.map { it.choiceName }.toTypedArray()
+
+        return EnumSettingWidget(
+            name = value.name,
+            value = currentChoice.choiceName,
+            choices = choiceNames,
+            config = WidgetConfig(x = widgetX, y = widgetY, width = widgetWidth, height = SETTING_HEIGHT),
+            onValueChanged = { choiceName ->
+                chooseValue.setByString(choiceName)
+                saveModuleConfiguration(value.base as ClientModule)
+                // Re-initialize widgets for the parent module
+                initializeSettingsWidgets(value.base as ClientModule)
+            }
+        )
+    }
+
+    @Suppress("UNCHECKED_CAST")
+    private fun createChoiceConfigurableWidget(value: Value<*>, widgetX: Int, widgetY: Int, widgetWidth: Int): EnumSettingWidget {
+        val choiceConfigurable = value as net.ccbluex.liquidbounce.config.types.nesting.ChoiceConfigurable<*>
+        val currentChoice = choiceConfigurable.activeChoice
+        val choiceNames = choiceConfigurable.choices.map { it.choiceName }.toTypedArray()
+
+        return EnumSettingWidget(
+            name = value.name,
+            value = currentChoice.choiceName,
+            choices = choiceNames,
+            config = WidgetConfig(x = widgetX, y = widgetY, width = widgetWidth, height = SETTING_HEIGHT),
+            onValueChanged = { choiceName ->
+                choiceConfigurable.setByString(choiceName)
+                saveModuleConfiguration(value.base as ClientModule)
+                initializeSettingsWidgets(value.base as ClientModule)
+            }
+        )
+    }
+
+    @Suppress("UNCHECKED_CAST")
+    private fun <T : Comparable<T>> getRangeForValue(value: Value<*>, defaultMin: T, defaultMax: T): Pair<T, T> {
+        return try {
+            if (value is RangedValue<*>) {
+                val range = value.range
+                when (range) {
+                    is ClosedFloatingPointRange<*> -> Pair(range.start as T, range.endInclusive as T)
+                    is IntRange -> Pair(range.first as T, range.last as T)
+                    else -> Pair(defaultMin, defaultMax)
+                }
+            } else {
+                Pair(defaultMin, defaultMax)
+            }
+        } catch (e: Exception) {
+            Pair(defaultMin, defaultMax)
+        }
+    }
+
+    private fun saveModuleConfiguration(module: ClientModule) {
+        try {
+            ConfigSystem.storeConfigurable(module)
+        } catch (e: Exception) {
+            println("Error saving configuration for module ${module.name}: ${e.message}")
+        }
+    }
+
+    @Suppress("UNCHECKED_CAST")
+    private fun createBindWidget(value: Value<*>, widgetX: Int, widgetY: Int, widgetWidth: Int): TextSettingWidget {
+        val typedValue = value as Value<InputBind>
+        return TextSettingWidget(
+            name = value.name,
+            value = typedValue.get().boundKey.translationKey,
+            config = WidgetConfig(x = widgetX, y = widgetY, width = widgetWidth, height = SETTING_HEIGHT),
+            onValueChanged = { newValue ->
+                try {
+                    value.setByString(newValue)
+                    saveModuleConfiguration(value.base as ClientModule)
+                } catch (e: Exception) { /* Ignore */ }
+            }
+        )
+    }
+
+    @Suppress("UNCHECKED_CAST")
+    private fun createListWidget(value: Value<*>, widgetX: Int, widgetY: Int, widgetWidth: Int): TextSettingWidget {
+        val typedValue = value as ListValue<*, *>
+        val valueString = if (typedValue is RegistryListValue<*, *>) {
+            val collection = typedValue.get() as Collection<Any>
+            try {
+                when (typedValue.innerType) {
+                    Block::class.java -> {
+                        val registry = Registries.BLOCK
+                        collection.joinToString(", ") { registry.getId(it as Block).toString() }
+                    }
+                    Item::class.java -> {
+                        val registry = Registries.ITEM
+                        collection.joinToString(", ") { registry.getId(it as Item).toString() }
+                    }
+                    else -> collection.joinToString(", ")
+                }
+            } catch (e: Exception) {
+                collection.joinToString(", ")
+            }
+        } else {
+            typedValue.get().joinToString(", ")
+        }
+
+        return TextSettingWidget(
+            name = value.name,
+            value = valueString,
+            config = WidgetConfig(x = widgetX, y = widgetY, width = widgetWidth, height = SETTING_HEIGHT),
+            onValueChanged = { newValue ->
+                try {
+                    value.setByString(newValue)
+                    saveModuleConfiguration(value.base as ClientModule)
+                } catch (e: Exception) { /* Ignore */ }
+            }
+        )
+    }
+
+    @Suppress("UNCHECKED_CAST")
+    private fun createColorWidget(value: Value<*>, widgetX: Int, widgetY: Int, widgetWidth: Int): TextSettingWidget {
+        val typedValue = value as Value<Color4b>
+        return TextSettingWidget(
+            name = value.name,
+            value = "#" + typedValue.get().toARGB().toUInt().toString(16),
+            config = WidgetConfig(x = widgetX, y = widgetY, width = widgetWidth, height = SETTING_HEIGHT),
+            onValueChanged = { newValue ->
+                try {
+                    value.setByString(newValue)
+                    saveModuleConfiguration(value.base as ClientModule)
+                } catch (e: Exception) { /* Ignore */ }
+            }
+        )
+    }
+
+    @Suppress("UNCHECKED_CAST")
+    private fun createMultiChooseWidget(value: Value<*>, widgetX: Int, widgetY: Int, widgetWidth: Int): TextSettingWidget {
+        val typedValue = value as MultiChooseListValue<*>
+        val valueString = typedValue.get().joinToString(", ") {
+            if (it is Enum<*>) it.name else it.toString()
+        }
+
+        return TextSettingWidget(
+            name = value.name,
+            value = valueString,
+            config = WidgetConfig(x = widgetX, y = widgetY, width = widgetWidth, height = SETTING_HEIGHT),
+            onValueChanged = { newValue ->
+                try {
+                    value.setByString(newValue)
+                    saveModuleConfiguration(value.base as ClientModule)
+                } catch (e: Exception) { /* Ignore */ }
+            }
+        )
+    }
 }
 
 /**

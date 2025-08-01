@@ -35,8 +35,7 @@ class ClickGuiScreen : Screen(Text.literal("ClickGUI")) {
     
     private val panels = mutableMapOf<Category, ClickGuiPanel>()
     private var searchText = ""
-    private var searchVisible = false
-    private var currentSettingsPopup: ModuleSettingsPopup? = null
+    private var searchVisible = true // Search is always visible now
     
     override fun init() {
         super.init()
@@ -64,14 +63,6 @@ class ClickGuiScreen : Screen(Text.literal("ClickGUI")) {
                 category = category,
                 allModules = modules,
                 config = panelConfig,
-                onOpenSettings = { module, moduleX, moduleY, moduleWidth, moduleHeight -> 
-                    // Hide any existing popup
-                    currentSettingsPopup?.hide()
-                    
-                    // Create and show new popup next to the module
-                    currentSettingsPopup = ModuleSettingsPopup(module, moduleX, moduleY, moduleWidth, moduleHeight)
-                    currentSettingsPopup?.show()
-                },
                 onPanelStateChanged = { category, x, y, expanded ->
                     // Save panel state when it changes
                     ClickGuiConfigManager.savePanelState(category, x, y, expanded)
@@ -102,9 +93,6 @@ class ClickGuiScreen : Screen(Text.literal("ClickGUI")) {
             renderSearchBar(context, mouseX, mouseY)
         }
         
-        // Render settings popup if visible (render last so it appears on top)
-        currentSettingsPopup?.render(context, mouseX, mouseY, delta)
-        
         // Render tooltip for hovered module
         renderTooltip(context, mouseX, mouseY)
         
@@ -113,7 +101,7 @@ class ClickGuiScreen : Screen(Text.literal("ClickGUI")) {
     
     override fun renderBackground(context: DrawContext, mouseX: Int, mouseY: Int, delta: Float) {
         // Much lighter semi-transparent background for better visibility
-        // context.fill(0, 0, width, height, 0x99000000.toInt()) // Dark, semi-transparent background
+        context.fill(0, 0, width, height, 0x80000000.toInt()) // Dark, semi-transparent background
         
         // Grid removed as requested - no longer rendering grid lines
     }
@@ -179,11 +167,6 @@ class ClickGuiScreen : Screen(Text.literal("ClickGUI")) {
     }
     
     override fun mouseClicked(mouseX: Double, mouseY: Double, button: Int): Boolean {
-        // Check settings popup first (highest priority)
-        if (currentSettingsPopup?.mouseClicked(mouseX, mouseY, button) == true) {
-            return true
-        }
-        
         // Handle panel clicks
         for (panel in panels.values) {
             if (panel.mouseClicked(mouseX, mouseY, button)) {
@@ -195,11 +178,6 @@ class ClickGuiScreen : Screen(Text.literal("ClickGUI")) {
     }
     
     override fun mouseDragged(mouseX: Double, mouseY: Double, button: Int, deltaX: Double, deltaY: Double): Boolean {
-        // Check settings popup first
-        if (currentSettingsPopup?.mouseDragged(mouseX, mouseY, button, deltaX, deltaY) == true) {
-            return true
-        }
-        
         // Handle panel dragging
         for (panel in panels.values) {
             if (panel.mouseDragged(mouseX, mouseY, button, deltaX, deltaY)) {
@@ -211,9 +189,6 @@ class ClickGuiScreen : Screen(Text.literal("ClickGUI")) {
     }
     
     override fun mouseReleased(mouseX: Double, mouseY: Double, button: Int): Boolean {
-        // Check settings popup first
-        currentSettingsPopup?.mouseReleased(mouseX, mouseY, button)
-        
         // Handle panel mouse release
         for (panel in panels.values) {
             panel.mouseReleased(mouseX, mouseY, button)
@@ -228,11 +203,6 @@ class ClickGuiScreen : Screen(Text.literal("ClickGUI")) {
         horizontalAmount: Double, 
         verticalAmount: Double
     ): Boolean {
-        // Check settings popup first
-        if (currentSettingsPopup?.mouseScrolled(mouseX, mouseY, horizontalAmount, verticalAmount) == true) {
-            return true
-        }
-        
         // Handle panel scrolling
         for (panel in panels.values) {
             if (panel.mouseScrolled(mouseX, mouseY, verticalAmount)) {
@@ -244,31 +214,18 @@ class ClickGuiScreen : Screen(Text.literal("ClickGUI")) {
     }
     
     override fun keyPressed(keyCode: Int, scanCode: Int, modifiers: Int): Boolean {
-        // Check settings popup first
-        if (currentSettingsPopup?.keyPressed(keyCode, scanCode, modifiers) == true) {
-            return true
-        }
-        
         // Handle search functionality
         return ClickGuiInputHandler.handleKeyInput(
             keyCode, searchVisible, searchText,
             ClickGuiInputHandler.KeyInputHandlers(
                 onEscapeKey = { visible ->
-                    if (visible) {
-                        searchVisible = false
+                    if (visible && searchText.isNotEmpty()) {
                         searchText = ""
                         filterModules()
-                        true
                     } else {
-                        // Hide popup if visible, otherwise close screen
-                        if (currentSettingsPopup?.isVisible() == true) {
-                            currentSettingsPopup?.hide()
-                            true
-                        } else {
-                            close()
-                            false
-                        }
+                        close()
                     }
+                    true
                 },
                 onToggleSearch = {
                     searchVisible = !searchVisible
@@ -292,11 +249,6 @@ class ClickGuiScreen : Screen(Text.literal("ClickGUI")) {
     }
     
     override fun charTyped(chr: Char, modifiers: Int): Boolean {
-        // Check settings popup first
-        if (currentSettingsPopup?.charTyped(chr, modifiers) == true) {
-            return true
-        }
-        
         return ClickGuiInputHandler.handleCharInput(chr, searchVisible) { newChar ->
             searchText += newChar
             filterModules()
@@ -315,8 +267,6 @@ class ClickGuiScreen : Screen(Text.literal("ClickGUI")) {
     }
     
     override fun close() {
-        // Hide any open popup
-        currentSettingsPopup?.hide()
         mc.mouse.lockCursor()
         super.close()
     }
