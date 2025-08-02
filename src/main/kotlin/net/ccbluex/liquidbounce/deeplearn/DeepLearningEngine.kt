@@ -45,6 +45,23 @@ object DeepLearningEngine {
         false
     }
 
+    /**
+     * Controls whether training is allowed on mobile devices
+     */
+    var isMobileTrainingAllowed: Boolean = false
+
+    /**
+     * Check if we're currently running on Android
+     */
+    val runningOnAndroid: Boolean get() = isAndroid
+
+    /**
+     * Check if training is allowed in the current environment
+     */
+    fun isTrainingAllowed(): Boolean {
+        return if (isAndroid) isMobileTrainingAllowed else true
+    }
+
     private val deepLearningFolder = if (isAndroid) {
         // On Android, use external files directory for better compatibility
         val externalDir = System.getProperty("user.home") ?: "/storage/emulated/0"

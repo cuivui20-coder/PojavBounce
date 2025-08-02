@@ -22,6 +22,7 @@ package net.ccbluex.liquidbounce.features.command.commands.deeplearn
 
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
+import net.ccbluex.liquidbounce.deeplearn.DeepLearningEngine
 import net.ccbluex.liquidbounce.deeplearn.DeepLearningEngine.modelsFolder
 import net.ccbluex.liquidbounce.deeplearn.ModelHolster
 import net.ccbluex.liquidbounce.deeplearn.ModelHolster.models
@@ -72,6 +73,11 @@ object CommandModels : CommandFactory {
             .suspendHandler { command, args ->
                 val name = args[0] as String
 
+                // Check if training is allowed on mobile devices
+                if (!DeepLearningEngine.isTrainingAllowed()) {
+                    throw CommandException(command.result("mobileTrainingDisabled"))
+                }
+
                 // Check if model exists
                 if (models.choices.any { model -> model.name.equals(name, true) }) {
                     throw CommandException(command.result("modelExists", name))
@@ -101,6 +107,12 @@ object CommandModels : CommandFactory {
             )
             .suspendHandler { command, args ->
                 val name = args[0] as String
+
+                // Check if training is allowed on mobile devices
+                if (!DeepLearningEngine.isTrainingAllowed()) {
+                    throw CommandException(command.result("mobileTrainingDisabled"))
+                }
+
                 val model = models.choices.find { model -> model.name.equals(name, true) } ?:
                     throw CommandException(command.result("modelNotFound", name))
 

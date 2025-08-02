@@ -362,6 +362,7 @@
   "liquidbounce.command.autodisable.subcommand.remove.result.moduleRemoved": "Module \"%s\" has been removed.",
 
   "liquidbounce.command.models.subcommand.create.result.modelExists": "❌ Model %s already exists.",
+  "liquidbounce.command.models.subcommand.create.result.mobileTrainingDisabled": "❌ Training is disabled on mobile devices. Use .allowMobileTrain true to enable.",
   "liquidbounce.command.models.subcommand.create.result.trainingStart": "⚡ Starting training for model %s...",
   "liquidbounce.command.models.subcommand.create.result.samplesLoaded": "✔ Loaded %s samples in %s.",
   "liquidbounce.command.models.subcommand.create.result.noSamples": "❌ You currently have no samples. Use [DebugRecorder] to record some.",
@@ -371,6 +372,7 @@
   "liquidbounce.command.models.subcommand.create.result.invalidName": "❌ Invalid model name. Model name must be alphanumeric and contain no spaces.",
 
   "liquidbounce.command.models.subcommand.improve.result.modelNotFound": "❌ Model %s not found.",
+  "liquidbounce.command.models.subcommand.improve.result.mobileTrainingDisabled": "❌ Training is disabled on mobile devices. Use .allowMobileTrain true to enable.",
   "liquidbounce.command.models.subcommand.improve.result.trainingStart": "⚡ Starting training for model %s...",
   "liquidbounce.command.models.subcommand.improve.result.noSamples": "❌ No samples found for model %s.",
   "liquidbounce.command.models.subcommand.improve.result.samplesLoaded": "✔ Loaded %s samples in %s.",
@@ -382,6 +384,13 @@
 
   "liquidbounce.command.models.subcommand.delete.result.modelNotFound": "❌ Model %s not found.",
   "liquidbounce.command.models.subcommand.delete.result.modelDeleted": "✔ Model %s deleted.",
+
+  "liquidbounce.command.allowMobileTrain.description": "Controls whether training is allowed on mobile devices",
+  "liquidbounce.command.allowMobileTrain.result.status": "Mobile training is currently %s (Running on Android: %s)",
+  "liquidbounce.command.allowMobileTrain.result.changed": "Mobile training %s",
+  "liquidbounce.command.allowMobileTrain.result.enabled": "enabled",
+  "liquidbounce.command.allowMobileTrain.result.disabled": "disabled",
+  "liquidbounce.command.allowMobileTrain.result.androidWarning": "⚠ You are running on Android and training is now disabled.",
 
   "liquidbounce.unsupportedDeepLearning": "❌ The deep learning engine has not been initialized. Your system might not be supported.",
   "liquidbounce.rotationSystem.angleSmooth.minarai.fallback": "The deep learning engine is required by Minarai, therefore falling back to %s angle smoothing.",
