@@ -255,3 +255,4 @@ class MixinSplashOverlayTest {
         println("✓ Auto-advance correctly triggers for progress values at or above 100%")
     }
 }
+
