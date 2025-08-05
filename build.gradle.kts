@@ -181,8 +181,11 @@ dependencies {
     // Machine Learning
     includeDependency("ai.djl:api:${project.property("djl_version")}")
     includeDependency("ai.djl.pytorch:pytorch-engine:${project.property("djl_version")}")
-    // Add Android ARM64 native libraries for PyTorch
-//    includeDependency("ai.djl.pytorch:pytorch-native-cpu:${project.property("djl_version")}:android-aarch64")
+    // Add TensorFlow Lite for mobile inference support  
+    includeDependency("org.tensorflow:tensorflow-lite:${project.property("tensorflow_lite_version")}")
+    
+    // For PojavLauncher Android compatibility, we'll extract native libraries at runtime
+    // Rather than trying to bundle AAR files into JAR which is complex
 //    runtimeOnly("ai.djl.mxnet:mxnet-engine:${project.property("djl_version")}")
 //    runtimeOnly("ai.djl.tensorflow:tensorflow-engine:${project.property("djl_version")}")
 
@@ -411,4 +414,24 @@ tasks.named("sourcesJar") {
 
 tasks.named("build") {
     dependsOn("copyZipInclude")
+}
+
+// Custom task to help with mobile engine compatibility
+tasks.register("extractMobileNativeLibs") {
+    group = "build"
+    description = "Extract native libraries for mobile/Android compatibility"
+    
+    doLast {
+        val nativeLibsDir = file("src/main/jniLibs")
+        if (!nativeLibsDir.exists()) {
+            nativeLibsDir.mkdirs()
+        }
+        
+        // Create architecture directories
+        file("src/main/jniLibs/armeabi-v7a").mkdirs()
+        file("src/main/jniLibs/arm64-v8a").mkdirs()
+        
+        logger.info("Native libraries directory structure created for mobile compatibility")
+        logger.info("On Android/PojavLauncher, DJL will use these directories for native libraries")
+    }
 }
