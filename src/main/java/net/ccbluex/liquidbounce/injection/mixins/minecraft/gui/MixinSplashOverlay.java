@@ -81,45 +81,54 @@ public class MixinSplashOverlay {
     private void render(DrawContext context, int mouseX, int mouseY, float delta, CallbackInfo ci) {
         EventManager.INSTANCE.callEvent(new ScreenRenderEvent(context, delta));
         
-        // Initialize skip button on first render if not hiding appearance
-        if (!skipButtonInitialized && !HideAppearance.INSTANCE.isHidingNow()) {
-            int width = client.getWindow().getScaledWidth();
-            int height = client.getWindow().getScaledHeight();
-            
-            skipButton = ButtonWidget.builder(ScreenTexts.PROCEED, button -> advanceToGame())
-                    .dimensions(width / 2 - 100, height / 4 + 120 + 12, 200, 20)
-                    .build();
-            skipButtonInitialized = true;
+        // Initialize skip button on first render if not hiding appearance and texture manager is ready
+        if (!skipButtonInitialized && !HideAppearance.INSTANCE.isHidingNow() && client.getTextureManager() != null) {
+            try {
+                int width = client.getWindow().getScaledWidth();
+                int height = client.getWindow().getScaledHeight();
+                
+                skipButton = ButtonWidget.builder(ScreenTexts.PROCEED, button -> advanceToGame())
+                        .dimensions(width / 2 - 100, height / 4 + 120 + 12, 200, 20)
+                        .build();
+                skipButtonInitialized = true;
+            } catch (Exception e) {
+                // If button creation fails due to texture issues, we'll try again next frame
+            }
         }
         
-        // Render skip button if not hiding appearance
+        // Render skip button if not hiding appearance and button is ready
         if (!HideAppearance.INSTANCE.isHidingNow() && skipButton != null) {
-            skipButton.render(context, mouseX, mouseY, delta);
-            
-            // Simple mouse click detection for the button
-            boolean isMousePressed = org.lwjgl.glfw.GLFW.glfwGetMouseButton(
-                client.getWindow().getHandle(), 
-                org.lwjgl.glfw.GLFW.GLFW_MOUSE_BUTTON_LEFT
-            ) == org.lwjgl.glfw.GLFW.GLFW_PRESS;
-            
-            boolean isMouseOverButton = skipButton.isMouseOver(mouseX, mouseY);
-            
-            // Track if mouse was pressed while over the button
-            if (!wasMousePressed && isMousePressed && isMouseOverButton) {
-                wasMousePressedInsideButton = true;
+            try {
+                skipButton.render(context, mouseX, mouseY, delta);
+                
+                // Simple mouse click detection for the button
+                boolean isMousePressed = org.lwjgl.glfw.GLFW.glfwGetMouseButton(
+                    client.getWindow().getHandle(), 
+                    org.lwjgl.glfw.GLFW.GLFW_MOUSE_BUTTON_LEFT
+                ) == org.lwjgl.glfw.GLFW.GLFW_PRESS;
+                
+                boolean isMouseOverButton = skipButton.isMouseOver(mouseX, mouseY);
+                
+                // Track if mouse was pressed while over the button
+                if (!wasMousePressed && isMousePressed && isMouseOverButton) {
+                    wasMousePressedInsideButton = true;
+                }
+                
+                // Detect click (press and release both inside button)
+                if (wasMousePressed && !isMousePressed && isMouseOverButton && wasMousePressedInsideButton) {
+                    advanceToGame();
+                }
+                
+                // Reset when mouse is released
+                if (!isMousePressed) {
+                    wasMousePressedInsideButton = false;
+                }
+                
+                wasMousePressed = isMousePressed;
+            } catch (Exception e) {
+                // If button rendering fails due to texture atlas issues, skip it this frame
+                // This prevents crashes during early loading phases
             }
-            
-            // Detect click (press and release both inside button)
-            if (wasMousePressed && !isMousePressed && isMouseOverButton && wasMousePressedInsideButton) {
-                advanceToGame();
-            }
-            
-            // Reset when mouse is released
-            if (!isMousePressed) {
-                wasMousePressedInsideButton = false;
-            }
-            
-            wasMousePressed = isMousePressed;
         }
     }
 
@@ -141,36 +150,50 @@ public class MixinSplashOverlay {
             return;
         }
 
-        int screenWidth = context.getScaledWindowWidth();
-        int screenHeight = context.getScaledWindowHeight();
+        // Check if texture manager is ready to prevent atlas initialization crashes
+        if (client.getTextureManager() == null) {
+            return;
+        }
 
-        float scaleFactor = Math.min(screenWidth * 0.4f / ClientLogoTexture.WIDTH, screenHeight * 0.25f / ClientLogoTexture.HEIGHT);
+        // Ensure texture is registered and available before drawing
+        try {
+            // Check if our texture exists in the texture manager
+            var texture = client.getTextureManager().getTexture(ClientLogoTexture.CLIENT_LOGO);
+            if (texture == null) {
+                return;
+            }
 
-        int displayWidth = (int)(ClientLogoTexture.WIDTH * scaleFactor);
-        int displayHeight = (int)(ClientLogoTexture.HEIGHT * scaleFactor);
+            int screenWidth = context.getScaledWindowWidth();
+            int screenHeight = context.getScaledWindowHeight();
 
-        int x = (screenWidth - displayWidth) / 2;
-        int y = (screenHeight - displayHeight) / 2;
+            float scaleFactor = Math.min(screenWidth * 0.4f / ClientLogoTexture.WIDTH, screenHeight * 0.25f / ClientLogoTexture.HEIGHT);
 
-        // Use the same color as the original brand color
-        int color = ColorHelper.getArgb(255, 24, 26, 27);
+            int displayWidth = (int)(ClientLogoTexture.WIDTH * scaleFactor);
+            int displayHeight = (int)(ClientLogoTexture.HEIGHT * scaleFactor);
 
-        // TODO: Draw as SVG instead of PNG
-        context.drawTexture(
-                RenderLayerExtensions::getSmoothTextureLayer,
-                ClientLogoTexture.CLIENT_LOGO,
-                x,
-                y,
-                0.0F,
-                0.0F,
-                displayWidth,
-                displayHeight,
-                ClientLogoTexture.WIDTH,
-                ClientLogoTexture.HEIGHT,
-                ClientLogoTexture.WIDTH,
-                ClientLogoTexture.HEIGHT,
-                color
-        );
+            int x = (screenWidth - displayWidth) / 2;
+            int y = (screenHeight - displayHeight) / 2;
+
+            // Use the same color as the original brand color
+            int color = ColorHelper.getArgb(255, 24, 26, 27);
+
+            // Use standard texture layer instead of custom render layer to avoid sprite atlas issues
+            context.drawTexture(
+                    RenderLayer::getGuiTextured,
+                    ClientLogoTexture.CLIENT_LOGO,
+                    x,
+                    y,
+                    0.0F,
+                    0.0F,
+                    displayWidth,
+                    displayHeight,
+                    ClientLogoTexture.WIDTH,
+                    ClientLogoTexture.HEIGHT
+            );
+        } catch (Exception e) {
+            // Silently fail if texture system isn't ready yet - this prevents crashes during early loading
+            // The logo simply won't be shown until the system is ready
+        }
     }
 
     @Unique
