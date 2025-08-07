@@ -155,10 +155,28 @@ class ClickGuiPanel(
         for (module in filteredModules) {
             if (currentY >= moduleAreaY + moduleAreaHeight) break // Stop rendering if below visible area
 
+            // Render the module itself
             if (currentY + moduleHeight > moduleAreaY && currentY < moduleAreaY + moduleAreaHeight) {
                 renderModule(ModuleRenderData(context, module, x, currentY, mouseX, mouseY))
             }
             currentY += moduleHeight
+            
+            // Render settings if module is expanded
+            if (expandedModules.getOrDefault(module, false)) {
+                val settingsWidgets = moduleSettingWidgets[module] ?: emptyList()
+                for (widget in settingsWidgets) {
+                    if (currentY >= moduleAreaY + moduleAreaHeight) break
+                    
+                    if (currentY + SETTING_HEIGHT > moduleAreaY && currentY < moduleAreaY + moduleAreaHeight) {
+                        // Update widget position and render
+                        widget.y = currentY
+                        val isHovered = mouseX >= x && mouseX <= x + width && 
+                                      mouseY >= currentY && mouseY <= currentY + SETTING_HEIGHT
+                        widget.render(context, mouseX, mouseY, isHovered)
+                    }
+                    currentY += SETTING_HEIGHT + SETTING_SPACING
+                }
+            }
         }
         
         context.disableScissor()
