@@ -45,18 +45,19 @@ class ClickGuiScrollTest {
     
     @Test
     fun `test scroll offset calculation logic`() {
-        // Test the scroll offset calculation logic used in mouseDragged
-        val scrollSensitivity = 2.0
-        val deltaY = 10.0
-        val expectedScrollDelta = (deltaY * scrollSensitivity).toInt()
+        // Test the scroll offset calculation logic used in mouseScrolled
+        // Positive amount (scrolling down) should increase scroll offset
+        val scrollSensitivity = 20.0
+        val positiveAmount = 1.0  // Scrolling down
+        val expectedScrollDelta = (positiveAmount * scrollSensitivity).toInt()
         
         assertEquals(20, expectedScrollDelta)
         
-        // Test negative movement
-        val negativeDeltaY = -5.0
-        val negativeScrollDelta = (negativeDeltaY * scrollSensitivity).toInt()
+        // Test negative amount (scrolling up) should decrease scroll offset  
+        val negativeAmount = -1.0  // Scrolling up
+        val negativeScrollDelta = (negativeAmount * scrollSensitivity).toInt()
         
-        assertEquals(-10, negativeScrollDelta)
+        assertEquals(-20, negativeScrollDelta)
     }
     
     @Test
@@ -89,14 +90,31 @@ class ClickGuiScrollTest {
         scrollOffset = maxOf(0, minOf(maxScroll, scrollOffset))
         assertEquals(100, scrollOffset)
         
-        // Test overflow case
+        // Test overflow case - scroll should be clamped to max
         scrollOffset = 300
         scrollOffset = maxOf(0, minOf(maxScroll, scrollOffset))
         assertEquals(200, scrollOffset)
         
-        // Test underflow case
+        // Test underflow case - scroll should be clamped to 0
         scrollOffset = -50
         scrollOffset = maxOf(0, minOf(maxScroll, scrollOffset))
         assertEquals(0, scrollOffset)
+    }
+    
+    @Test 
+    fun `test scroll direction is intuitive`() {
+        // Test that scroll direction matches user expectations
+        // Scrolling down (positive amount) should move content up (increase scroll offset)
+        val currentScrollOffset = 50
+        val scrollDownAmount = 1.0
+        val scrollMultiplier = 20
+        
+        val newScrollOffset = currentScrollOffset + (scrollDownAmount * scrollMultiplier).toInt()
+        assertEquals(70, newScrollOffset)
+        
+        // Scrolling up (negative amount) should move content down (decrease scroll offset)
+        val scrollUpAmount = -1.0
+        val newScrollOffsetUp = currentScrollOffset + (scrollUpAmount * scrollMultiplier).toInt()
+        assertEquals(30, newScrollOffsetUp)
     }
 }

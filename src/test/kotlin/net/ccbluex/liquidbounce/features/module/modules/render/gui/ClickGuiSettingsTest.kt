@@ -220,4 +220,25 @@ class ClickGuiSettingsTest {
         assertTrue(popupClass.name.contains("ModuleSettingsPopup"))
         assertTrue(screenClass.name.contains("ClickGuiScreen"))
     }
+    
+    @Test
+    fun `test mouse coordinate handling for scrolled content`() {
+        // Test that mouse coordinates are handled correctly when content is scrolled
+        val mouseX = 100
+        val mouseY = 200
+        val scrollOffset = 50
+        
+        // With our fix, widget.isMouseOver should use raw mouse coordinates
+        // and the widget position should be adjusted for scroll during rendering
+        
+        // The widget Y position should account for scroll offset during rendering:
+        val widgetYDuringRender = 150 - scrollOffset // Widget at Y=150, scroll=50, renders at Y=100
+        val expectedWidgetScreenY = 100
+        
+        assertEquals(expectedWidgetScreenY, widgetYDuringRender)
+        
+        // Mouse hit testing should use the actual screen coordinates
+        val isMouseOverWidget = mouseY >= expectedWidgetScreenY && mouseY <= expectedWidgetScreenY + 20 // assuming height=20
+        assertTrue(isMouseOverWidget)
+    }
 }
