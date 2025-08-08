@@ -14,7 +14,16 @@ LiquidBounce is a free and open-source mixin-based injection hacked client using
 
 ## Mobile minarai support
 
-To use minarai or other deep lesrning features on Android set flag -Dai.djl.default_engine=TFLite in your launcher (dl only works on fold craft launcher for now).
+To use minarai or other deep learning features on Android, the project automatically detects Android environments 
+and uses TensorFlow Lite as the default engine. The PyTorch engine is available for desktop use, but Linux-specific 
+native libraries are excluded to prevent UnsatisfiedLinkError on Android devices.
+
+For Android/PojavLauncher compatibility:
+- TensorFlow Lite engine is used automatically on Android
+- Linux-specific PyTorch native libraries (libdl.so.2) are excluded
+- Native libraries are loaded from appropriate platform directories
+
+Set flag -Dai.djl.default_engine=TFLite in your launcher if needed (automatic on Android detection).
 
 Not required on PC
 
