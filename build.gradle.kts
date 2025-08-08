@@ -181,7 +181,8 @@ dependencies {
     // Machine Learning
     includeDependency("ai.djl:api:${project.property("djl_version")}")
     includeDependency("ai.djl.pytorch:pytorch-engine:${project.property("djl_version")}")
-    // Add TensorFlow Lite for mobile inference support  
+    // Add TensorFlow Lite engine for mobile/Android inference support
+    includeDependency("ai.djl.tflite:tflite-engine:${project.property("djl_tflite_version")}")
     includeDependency("org.tensorflow:tensorflow-lite:${project.property("tensorflow_lite_version")}")
     
     // For PojavLauncher Android compatibility, we'll extract native libraries at runtime

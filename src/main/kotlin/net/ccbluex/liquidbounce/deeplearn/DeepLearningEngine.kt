@@ -179,11 +179,11 @@ object DeepLearningEngine {
                 // Disable tracking of DJL
                 System.setProperty("OPT_OUT_TRACKING", "true")
                 
-                // For mobile/Android compatibility, prefer inference-only mode
+                // For mobile/Android compatibility, prefer TensorFlow Lite for inference
                 if (isAndroid) {
-                    System.setProperty("DJL_DEFAULT_ENGINE", "PyTorch")
+                    System.setProperty("DJL_DEFAULT_ENGINE", "TensorFlowLite")
                     // Limit to CPU for better mobile compatibility
-                    System.setProperty("ai.djl.pytorch.graph_optimizer", "false")
+                    System.setProperty("ai.djl.tflite.cpu", "true")
                     
                     if (isFCL) {
                         logger.info(
