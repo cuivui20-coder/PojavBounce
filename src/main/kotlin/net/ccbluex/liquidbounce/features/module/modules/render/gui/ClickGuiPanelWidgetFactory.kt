@@ -37,22 +37,21 @@ object ClickGuiPanelWidgetFactory {
     private const val SETTING_SPACING = 2
 
     fun initializeSettingsWidgets(
-        module: ClientModule, 
-        panelX: Int, 
+        module: ClientModule,
+        panelX: Int,
         panelWidth: Int,
-        existingWidgets: MutableMap<ClientModule, List<SettingWidget<*>>>
+        existingWidgets: MutableMap<ClientModule, List<SettingWidget<*>>>,
+        expandedSections: MutableMap<String, Boolean>
     ) {
-        if (existingWidgets.containsKey(module)) return
-
         val widgets = mutableListOf<SettingWidget<*>>()
         val valueCreators = mutableListOf<Pair<Value<*>, Int>>()
-        collectValues(module, valueCreators, 0)
+        collectValues(module, valueCreators, 0, expandedSections)
 
         var currentY = 0 // y is set dynamically during render
         for ((value, indent) in valueCreators) {
             val widgetX = panelX + 10 + indent * 10
             val widgetWidth = panelWidth - 20 - indent * 10
-            val widget = createWidgetForValue(value, widgetX, currentY, widgetWidth, module)
+            val widget = createWidgetForValue(value, widgetX, currentY, widgetWidth, module, expandedSections)
             if (widget != null) {
                 widgets.add(widget)
                 currentY += SETTING_HEIGHT + SETTING_SPACING
@@ -62,37 +61,48 @@ object ClickGuiPanelWidgetFactory {
     }
 
     private fun collectValues(
-        configurable: Configurable, 
-        list: MutableList<Pair<Value<*>, Int>>, 
-        indent: Int
+        configurable: Configurable,
+        list: MutableList<Pair<Value<*>, Int>>,
+        indent: Int,
+        expandedSections: Map<String, Boolean>
     ) {
         for (value in configurable.inner) {
             list.add(Pair(value, indent))
 
-            if (value is net.ccbluex.liquidbounce.config.types.nesting.ChoiceConfigurable<*>) {
-                collectValues(value.activeChoice, list, indent + 1)
-            } else if (value is Configurable) {
-                // Could add section support here if needed
+            if (value is Configurable) {
+                val isSectionExpanded = expandedSections.getOrDefault(value.name, true)
+                if (isSectionExpanded) {
+                    if (value is net.ccbluex.liquidbounce.config.types.nesting.ChoiceConfigurable<*>) {
+                        collectValues(value.activeChoice, list, indent + 1, expandedSections)
+                    } else {
+                        collectValues(value, list, indent + 1, expandedSections)
+                    }
+                }
             }
         }
     }
 
     @Suppress("UNCHECKED_CAST")
     private fun createWidgetForValue(
-        value: Value<*>, 
-        widgetX: Int, 
-        widgetY: Int, 
-        widgetWidth: Int, 
-        module: ClientModule
+        value: Value<*>,
+        widgetX: Int,
+        widgetY: Int,
+        widgetWidth: Int,
+        module: ClientModule,
+        expandedSections: Map<String, Boolean>
     ): SettingWidget<*>? {
         return when (value.valueType) {
             ValueType.BOOLEAN -> createBooleanWidget(value, widgetX, widgetY, widgetWidth, module)
             ValueType.FLOAT -> createFloatWidget(value, widgetX, widgetY, widgetWidth, module)
             ValueType.INT -> createIntWidget(value, widgetX, widgetY, widgetWidth, module)
             ValueType.CHOOSE, ValueType.CHOICE -> createEnumWidget(value, widgetX, widgetY, widgetWidth, module)
-            ValueType.TEXT, ValueType.BIND, ValueType.LIST, ValueType.BLOCK, ValueType.COLOR, ValueType.MULTI_CHOOSE -> 
+            ValueType.TEXT, ValueType.BIND, ValueType.LIST, ValueType.BLOCK, ValueType.COLOR, ValueType.MULTI_CHOOSE ->
                 createTextWidget(value, widgetX, widgetY, widgetWidth, module)
-            else -> null
+            else -> if (value is Configurable) {
+                createSectionHeaderWidget(value, widgetX, widgetY, widgetWidth, expandedSections)
+            } else {
+                null
+            }
         }
     }
 
@@ -310,3 +320,17 @@ object ClickGuiPanelWidgetFactory {
     }
 
 }
+
+    private fun createSectionHeaderWidget(
+        value: Configurable,
+        widgetX: Int,
+        widgetY: Int,
+        widgetWidth: Int,
+        expandedSections: Map<String, Boolean>
+    ): SectionHeaderWidget {
+        return SectionHeaderWidget(
+            name = value.name,
+            isExpanded = expandedSections.getOrDefault(value.name, true),
+            config = WidgetConfig(x = widgetX, y = widgetY, width = widgetWidth, height = SETTING_HEIGHT)
+        )
+    }

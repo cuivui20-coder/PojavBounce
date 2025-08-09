@@ -81,6 +81,7 @@ class ClickGuiPanel(
     private val headerHeight get() = GuiConfig.headerHeight
 
     private val expandedModules = mutableMapOf<ClientModule, Boolean>()
+    private val expandedSettingSections = mutableMapOf<String, Boolean>()
     private val moduleSettingWidgets = mutableMapOf<ClientModule, List<SettingWidget<*>>>()
     private var openDropdown: EnumSettingWidget? = null
 
@@ -449,6 +450,7 @@ class ClickGuiPanel(
             // Fixed hit testing: account for scroll offset correctly
             if (widget.isMouseOver(mouseX, mouseY)) {
                 val widgetClick = handleWidgetClick(
+                    module,
                     widget, 
                     mouseX.toDouble(), 
                     mouseY.toDouble(), 
@@ -473,10 +475,11 @@ class ClickGuiPanel(
         }
     }
 
-    private fun handleWidgetClick(widget: SettingWidget<*>, mouseX: Double, mouseY: Double, button: Int): Boolean {
+    private fun handleWidgetClick(module: ClientModule, widget: SettingWidget<*>, mouseX: Double, mouseY: Double, button: Int): Boolean {
         if (widget.mouseClicked(mouseX, mouseY, button)) {
             if (widget is SectionHeaderWidget) {
-                // This logic is now inside the panel, not a popup
+                expandedSettingSections[widget.name] = !expandedSettingSections.getOrDefault(widget.name, true)
+                initializeSettingsWidgets(module)
             }
             if (widget is EnumSettingWidget && widget.isDropdownOpen) {
                 openDropdown = widget
@@ -510,7 +513,7 @@ class ClickGuiPanel(
                 true
             }
             1 -> {
-                // Open module settings popup next to the module
+                // Toggle settings expansion
                 if (moduleHasSettings(module)) {
                     val isExpanded = expandedModules.getOrDefault(module, false)
                     if (!isExpanded) {
@@ -670,7 +673,7 @@ class ClickGuiPanel(
     // WIDGET CREATION AND MANAGEMENT LOGIC (using factory)
 
     private fun initializeSettingsWidgets(module: ClientModule) {
-        ClickGuiPanelWidgetFactory.initializeSettingsWidgets(module, this.x, this.width, moduleSettingWidgets)
+        ClickGuiPanelWidgetFactory.initializeSettingsWidgets(module, this.x, this.width, moduleSettingWidgets, expandedSettingSections)
     }
 }
 
