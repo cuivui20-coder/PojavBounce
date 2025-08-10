@@ -211,6 +211,8 @@ dependencies {
 
     // Test libraries
     testImplementation("org.junit.jupiter:junit-jupiter:5.13.1")
+    testImplementation("org.jetbrains.kotlin:kotlin-test")
+    testImplementation("org.jetbrains.kotlin:kotlin-test-junit5")
     testRuntimeOnly("org.junit.platform:junit-platform-launcher")
 
     // Fix nullable annotations
