@@ -3,11 +3,11 @@
     import {
         getModuleSettingsTree,
         setSettingsField
-    } from "../../integration/rest";
-    import type {SettingsTree, SettingsGroup, SettingsField} from "../../integration/types";
+    } from "../../../integration/rest";
+    import type {SettingsTree, SettingsGroup, SettingsField} from "../../../integration/types";
     import {slide} from "svelte/transition";
     import {quintOut} from "svelte/easing";
-    import {setItem, getItem} from "../../integration/persistent_storage";
+    import {setItem} from "../../../integration/persistent_storage";
 
     export let moduleName: string;
 
@@ -18,7 +18,9 @@
 
     onMount(async () => {
         await loadSettingsTree();
-        await loadGroupStates();
+        setTimeout(() => {
+            loadGroupStates();
+        }, 500);
     });
 
     async function loadSettingsTree() {
@@ -40,7 +42,7 @@
         
         for (const group of settingsTree.groups) {
             const storageKey = `settingsTree.${moduleName}.${group.groupId}`;
-            const saved = await getItem(storageKey);
+            const saved = localStorage.getItem(storageKey);
             groupStates[group.groupId] = saved === "true" || group.expanded;
         }
         groupStates = {...groupStates}; // Trigger reactivity
@@ -128,7 +130,7 @@
                                 {#if field.visible}
                                     <div class="field" class:enabled={field.enabled}>
                                         <div class="field-header">
-                                            <label class="field-name">{field.fieldName}</label>
+                                            <span class="field-name">{field.fieldName}</span>
                                             <span class="field-type">{field.fieldType}</span>
                                         </div>
                                         
@@ -207,7 +209,7 @@
 </div>
 
 <style lang="scss">
-  @use "../../colors.scss" as *;
+  @use "../../../colors.scss" as *;
 
   .settings-tree {
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
