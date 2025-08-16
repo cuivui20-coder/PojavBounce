@@ -19,6 +19,7 @@ import type {
     Proxy,
     Server,
     Session,
+    SettingsTree,
     VirtualScreen,
     World
 } from "./types";
@@ -47,6 +48,39 @@ export async function getModuleSettings(name: string): Promise<ConfigurableSetti
     const data = await response.json();
 
     return data;
+}
+
+// New settings tree API functions
+export async function getModuleSettingsTree(name: string): Promise<SettingsTree> {
+    const searchParams = new URLSearchParams({name});
+
+    const response = await fetch(`${API_BASE}/client/modules/settingsTree?${searchParams.toString()}`);
+    const data = await response.json();
+
+    return data;
+}
+
+export async function getSettingsField(module: string, field: string): Promise<any> {
+    const searchParams = new URLSearchParams({module, field});
+
+    const response = await fetch(`${API_BASE}/client/modules/settings/field?${searchParams.toString()}`);
+    const data = await response.json();
+
+    return data;
+}
+
+export async function setSettingsField(module: string, fieldPath: string, value: any): Promise<void> {
+    await fetch(`${API_BASE}/client/modules/settings/field`, {
+        method: "PUT",
+        headers: {
+            "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+            module,
+            fieldPath,
+            value
+        })
+    });
 }
 
 export async function setModuleSettings(name: string, settings: ConfigurableSetting) {

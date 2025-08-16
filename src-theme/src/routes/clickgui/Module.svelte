@@ -7,6 +7,7 @@
     } from "../../integration/rest";
     import type {ConfigurableSetting} from "../../integration/types";
     import GenericSetting from "./setting/common/GenericSetting.svelte";
+    import SettingsTreeView from "./setting/SettingsTreeView.svelte";
     import {slide} from "svelte/transition";
     import {quintOut} from "svelte/easing";
     import {description as descriptionStore, highlightModuleName} from "./clickgui_store";
@@ -24,12 +25,14 @@
     const path = `clickgui.${name}`;
     let expanded = false;
     let hasSettings = false;
+    let useTreeView = false; // Toggle between old and new settings view
 
     onMount(async () => {
         await fetchModuleSettings();
 
         setTimeout(() => {
-            expanded = localStorage.getItem(path) === "true"
+            expanded = localStorage.getItem(path) === "true";
+            useTreeView = localStorage.getItem(`${path}.treeView`) === "true";
         }, 500);
     });
 
@@ -99,6 +102,13 @@
         expanded = !expanded;
         await setItem(path, expanded.toString());
     }
+
+    async function toggleSettingsView(event) {
+        event.preventDefault();
+        event.stopPropagation();
+        useTreeView = !useTreeView;
+        await setItem(`${path}.treeView`, useTreeView.toString());
+    }
 </script>
 
 <!-- svelte-ignore a11y-no-static-element-interactions -->
@@ -125,9 +135,28 @@
 
     {#if expanded && configurable}
         <div class="settings">
-            {#each configurable.value as setting (setting.name)}
-                <GenericSetting {path} bind:setting on:change={updateModuleSettings}/>
-            {/each}
+            <div class="settings-header">
+                <span class="settings-mode">
+                    {useTreeView ? 'Tree View' : 'Classic View'}
+                </span>
+                <!-- svelte-ignore a11y-click-events-have-key-events -->
+                <!-- svelte-ignore a11y-no-static-element-interactions -->
+                <button 
+                    class="view-toggle" 
+                    on:click={toggleSettingsView}
+                    title="Switch between Classic and Tree view"
+                >
+                    {useTreeView ? '📋' : '🌳'}
+                </button>
+            </div>
+            
+            {#if useTreeView}
+                <SettingsTreeView moduleName={name} />
+            {:else}
+                {#each configurable.value as setting (setting.name)}
+                    <GenericSetting {path} bind:setting on:change={updateModuleSettings}/>
+                {/each}
+            {/if}
         </div>
     {/if}
 </div>
@@ -174,6 +203,36 @@
       background-color: rgba($clickgui-base-color, 0.5);
       border-left: solid 4px $accent-color;
       padding: 0 11px 0 7px;
+
+      .settings-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 8px 0;
+        border-bottom: 1px solid rgba($clickgui-text-color, 0.1);
+        margin-bottom: 8px;
+
+        .settings-mode {
+          font-size: 12px;
+          color: $clickgui-text-dimmed-color;
+          font-weight: 500;
+        }
+
+        .view-toggle {
+          background: none;
+          border: 1px solid rgba($clickgui-text-color, 0.2);
+          border-radius: 4px;
+          padding: 4px 8px;
+          cursor: pointer;
+          font-size: 14px;
+          transition: all 0.2s ease;
+
+          &:hover {
+            border-color: $accent-color;
+            background-color: rgba($accent-color, 0.1);
+          }
+        }
+      }
     }
 
     &.has-settings {

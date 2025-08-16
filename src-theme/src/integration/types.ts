@@ -9,6 +9,45 @@ export interface Module {
     tag: string | null;
 }
 
+// New settings tree interfaces
+export interface SettingsTree {
+    moduleId: string;
+    moduleName: string;
+    moduleDescription: string;
+    groups: SettingsGroup[];
+    stableId: string;
+}
+
+export interface SettingsGroup {
+    groupId: string;
+    groupName: string;
+    groupType: 'NORMAL' | 'CHOICE' | 'TOGGLEABLE';
+    expanded: boolean;
+    visible: boolean;
+    enabled: boolean;
+    fields: SettingsField[];
+    subGroups: SettingsGroup[];
+    stableId: string;
+}
+
+export interface SettingsField {
+    fieldId: string;
+    fieldName: string;
+    fieldType: 'BOOLEAN' | 'NUMBER' | 'STRING' | 'CHOICE' | 'RANGE' | 'COLOR' | 'KEY' | 'BIND';
+    currentValue: any;
+    defaultValue: any;
+    visible: boolean;
+    enabled: boolean;
+    metadata: Record<string, any>;
+    stableId: string;
+    endpoint: SettingsEndpoint;
+}
+
+export interface SettingsEndpoint {
+    get: string;
+    set: string;
+}
+
 export interface GroupedModules {
     [category: string]: Module[]
 }

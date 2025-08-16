@@ -60,7 +60,13 @@ internal fun registerInteropFunctions(node: Node) = node.withPath("/api/v1/clien
         post("/toggle", ::toggleModule)
         get("/settings", ::getSettings)
         put("/settings", ::putSettings)
+        get("/settingsTree", ::getModuleSettingsTree)
         post("/panic", ::postPanic)
+        withPath("/settings") {
+            get("/field", ::getModuleSettingsField)
+            put("/field", ::setModuleSettingsField)
+            post("/field", ::updateModuleSettingsField)
+        }
     }
     get("/module/:name", ::getModule)
 
