@@ -654,9 +654,15 @@ class ModuleSettingsPopup(
             return true
         }
         
-        // Handle widget key presses for text input
+        // Handle widget key presses for text input and section headers
         for (widget in settingWidgets) {
             if (widget.keyPressed(keyCode, scanCode, modifiers)) {
+                // If it was a section header that handled the key, toggle it
+                if (widget is SectionHeaderWidget && (keyCode == 32 || keyCode == 257)) {
+                    val currentState = AccordionStateManager.isSectionExpanded(module, widget.name, true)
+                    AccordionStateManager.setSectionExpanded(module, widget.name, !currentState)
+                    initializeSettingWidgets() // Rebuild the widget list
+                }
                 return true
             }
         }

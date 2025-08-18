@@ -660,7 +660,15 @@ class SectionHeaderWidget(
         return false
     }
 
-    override fun keyPressed(keyCode: Int, scanCode: Int, modifiers: Int): Boolean = false
+    override fun keyPressed(keyCode: Int, scanCode: Int, modifiers: Int): Boolean {
+        // Support Space (32) and Enter (257) to toggle the section
+        if (keyCode == 32 || keyCode == 257) {
+            // Return true to indicate the key was handled
+            // The actual toggle logic is handled in ModuleSettingsPopup
+            return true
+        }
+        return false
+    }
 }
 
 /**

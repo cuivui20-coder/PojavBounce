@@ -149,7 +149,9 @@ class AccordionStateManagerTest {
                 }
             }
         } catch (e: Exception) {
-            // Ignore cleanup errors
+            // Explicitly ignore cleanup errors in test teardown
+            // This is acceptable since it's test cleanup and shouldn't affect test results
+            println("Test cleanup warning: ${e.message}")
         }
     }
 }
