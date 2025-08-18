@@ -60,7 +60,6 @@ class ModuleSettingsPopup(
     
     private val settingWidgets = mutableListOf<SettingWidget<*>>()
     private val widgetToValueMap = mutableMapOf<SettingWidget<*>, Value<*>>()
-    private val sections = mutableMapOf<String, Boolean>() // Key: section name, Value: expanded
     private var openDropdown: EnumSettingWidget? = null
     private var scrollOffset = 0
     private var x = 0
@@ -159,7 +158,7 @@ class ModuleSettingsPopup(
         for (value in configurable.inner) {
             list.add(Pair(value, indent))
 
-            val isSectionExpanded = sections.getOrPut(value.name) { true }
+            val isSectionExpanded = AccordionStateManager.isSectionExpanded(module, value.name, true)
 
             if (isSectionExpanded) {
                 if (value is net.ccbluex.liquidbounce.config.types.nesting.ChoiceConfigurable<*>) {
@@ -533,7 +532,8 @@ class ModuleSettingsPopup(
         val localMouseY = mouseY + scrollOffset
         if (widget.mouseClicked(mouseX, localMouseY, button)) {
             if (widget is SectionHeaderWidget) {
-                sections[widget.name] = !sections.getOrDefault(widget.name, true)
+                val currentState = AccordionStateManager.isSectionExpanded(module, widget.name, true)
+                AccordionStateManager.setSectionExpanded(module, widget.name, !currentState)
                 initializeSettingWidgets() // Rebuild the widget list
             }
             return true
@@ -707,7 +707,7 @@ class ModuleSettingsPopup(
     ): SectionHeaderWidget {
         return SectionHeaderWidget(
             name = value.name,
-            isExpanded = sections.getOrDefault(value.name, true),
+            isExpanded = AccordionStateManager.isSectionExpanded(module, value.name, true),
             config = WidgetConfig(x = widgetX, y = widgetY, width = widgetWidth, height = SETTING_HEIGHT)
         )
     }
