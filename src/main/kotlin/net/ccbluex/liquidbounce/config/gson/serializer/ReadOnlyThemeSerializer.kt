@@ -24,7 +24,6 @@ package net.ccbluex.liquidbounce.config.gson.serializer
 import com.google.gson.JsonObject
 import com.google.gson.JsonSerializationContext
 import com.google.gson.JsonSerializer
-import net.ccbluex.liquidbounce.config.gson.serializer.ConfigurableSerializer.Companion.serializeReadOnly
 import net.ccbluex.liquidbounce.integration.theme.Theme
 import java.lang.reflect.Type
 
@@ -37,7 +36,8 @@ object ReadOnlyThemeSerializer : JsonSerializer<Theme> {
     ) = JsonObject().apply {
         addProperty("name", src.metadata.name)
         addProperty("id", src.metadata.id)
-        add("settings", serializeReadOnly(src.settings, context))
+        // Note: settings serialization stubbed for native GUI migration
+        add("settings", JsonObject())
     }
 
 }

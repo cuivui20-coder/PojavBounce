@@ -38,7 +38,7 @@ enum class MarketplaceItemType(
     OTHER("Other", false, false);
 
     suspend fun reload() = when (this) {
-        THEME -> ThemeManager.load()
+        THEME -> { /* No-op for native GUI - themes are deprecated */ }
         SCRIPT -> ScriptManager.reload()
         else -> { }
     }

@@ -165,10 +165,7 @@ object MarketplaceApi : BaseApi(config.apiEndpointV3) {
         revisionId: Int,
         dependencyRevisionId: Int
     ) = delete<Unit>(
-        "/marketplace/$id/revisions/$revisionId/dependencies",
-        JsonObject().apply {
-            addProperty("dependency_revision_id", dependencyRevisionId)
-        }.toRequestBody(),
+        "/marketplace/$id/revisions/$revisionId/dependencies?dependency_revision_id=$dependencyRevisionId",
         headers = { addAuth(session) }
     )
 

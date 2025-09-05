@@ -51,6 +51,11 @@ object HttpClient {
 
     val JSON_MEDIA_TYPE = "application/json; charset=utf-8".toMediaType()
     val FORM_MEDIA_TYPE = "application/x-www-form-urlencoded".toMediaType()
+    
+    object MediaTypes {
+        val OCTET_STREAM = "application/octet-stream".toMediaType()
+        val IMAGE_PNG = "image/png".toMediaType()
+    }
 
     /**
      * Client default [OkHttpClient]
