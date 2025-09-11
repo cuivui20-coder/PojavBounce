@@ -44,18 +44,18 @@ fun marketplaceListCommand() = buildCommand("list") {
 
     val page = addParam("page") {
         verifiedBy(ParameterBuilder.INTEGER_VALIDATOR)
-            .optional(1)
+            .optional()
     }
 
     val featured = addParam("featured") {
         verifiedBy(ParameterBuilder.BOOLEAN_VALIDATOR)
-            .optional(false)
+            .optional()
     }
 
-    suspendHandler {
+    this.suspendHandler { command, args ->
         val type = type.cast()
-        val page = page.cast()
-        val featured = featured.cast()
+        val page = if (page.value != null) page.cast() else 1
+        val featured = if (featured.value != null) featured.cast() else false
 
         val response = MarketplaceApi.getMarketplaceItems(page, 10, type = type, featured = featured)
 

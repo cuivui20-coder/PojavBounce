@@ -54,19 +54,17 @@ fun marketplaceCreateItemCommand() = buildCommand("create") {
             .required()
     }
 
-    suspendHandler {
+    this.suspendHandler { command, args ->
         val clientAccount = ClientAccountManager.accountOrException()
 
         val name = name.cast()
         val type = type.cast()
         val description = description.castVararg().joinToString(" ")
 
-        val response = MarketplaceApi.createMarketplaceItem(
-            clientAccount.takeSession(),
-            name,
-            type,
-            description
-        )
+        val response = run {
+            // Stubbed for native GUI - marketplace operations handled through web interface
+            throw CommandException("Marketplace item creation requires web interface access")
+        }
 
         chat(
             regular(

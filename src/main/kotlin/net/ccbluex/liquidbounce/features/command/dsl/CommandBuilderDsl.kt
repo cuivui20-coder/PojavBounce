@@ -20,6 +20,7 @@
 package net.ccbluex.liquidbounce.features.command.dsl
 
 import net.ccbluex.liquidbounce.features.command.Command
+import net.ccbluex.liquidbounce.features.command.CommandFactory
 import net.ccbluex.liquidbounce.features.command.Parameter
 import net.ccbluex.liquidbounce.features.command.builder.CommandBuilder
 
@@ -33,8 +34,8 @@ inline fun buildCommand(name: String, block: CommandBuilder.() -> Unit): Command
 inline fun commandFactory(
     name: String,
     crossinline block: CommandBuilder.() -> Unit,
-): Command.Factory {
-    return Command.Factory { buildCommand(name, block) }
+): CommandFactory {
+    return CommandFactory { buildCommand(name, block) }
 }
 
 context(context: Command.Handler.Context)

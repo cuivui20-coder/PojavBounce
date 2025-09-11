@@ -17,6 +17,7 @@
  * along with LiquidBounce. If not, see <https://www.gnu.org/licenses/>.
  */
 package net.ccbluex.liquidbounce.features.command.commands.client.marketplace.revisions
+import net.ccbluex.liquidbounce.features.command.CommandFactory
 
 import net.ccbluex.liquidbounce.features.command.Command
 import net.ccbluex.liquidbounce.features.command.builder.CommandBuilder
@@ -24,12 +25,12 @@ import net.ccbluex.liquidbounce.features.command.builder.CommandBuilder
 /**
  * Manage marketplace item revisions
  */
-object MarketplaceRevisionsCommand : Command.Factory {
+object MarketplaceRevisionsCommand : CommandFactory {
 
     override fun createCommand() = CommandBuilder.begin("revisions")
         .hub()
-        .subcommand(MarketplaceListRevisionsCommand)
+        .subcommand(MarketplaceListRevisionsCommand.createCommand())
         // Uploading revision is disabled until proven stable
-        // .subcommand(UploadRevisionCommand)
+        // .subcommand(UploadRevisionCommand.createCommand())
         .build()
 }

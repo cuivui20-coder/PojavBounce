@@ -17,6 +17,7 @@
  * along with LiquidBounce. If not, see <https://www.gnu.org/licenses/>.
  */
 package net.ccbluex.liquidbounce.features.command.commands.client.marketplace
+import net.ccbluex.liquidbounce.features.command.CommandFactory
 
 import net.ccbluex.liquidbounce.api.models.marketplace.MarketplaceItemStatus
 import net.ccbluex.liquidbounce.api.services.marketplace.MarketplaceApi
@@ -35,7 +36,7 @@ import net.ccbluex.liquidbounce.utils.client.variable
 /**
  * Subscribe to marketplace item
  */
-object MarketplaceSubscribeCommand : Command.Factory {
+object MarketplaceSubscribeCommand : CommandFactory {
 
     override fun createCommand() = CommandBuilder.begin("subscribe")
         .parameter(
@@ -45,7 +46,7 @@ object MarketplaceSubscribeCommand : Command.Factory {
                 .required()
                 .build()
         )
-        .suspendHandler {
+        .suspendHandler { command, args ->
             val id = args[0] as Int
 
             if (MarketplaceManager.isSubscribed(id)) {

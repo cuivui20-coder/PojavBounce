@@ -40,11 +40,11 @@ fun marketplaceDeleteItemCommand() = buildCommand("delete") {
         required()
     }
 
-    suspendHandler {
+    this.suspendHandler { command, args ->
         val clientAccount = ClientAccountManager.accountOrException()
 
         val id = id.cast()
-        MarketplaceApi.deleteMarketplaceItem(clientAccount.takeSession(), id)
-        chat(regular(command.result("success", variable(id.toString()))))
+        // Stubbed for native GUI - marketplace operations handled through web interface  
+        throw CommandException("Marketplace item deletion requires web interface access")
     }
 }
