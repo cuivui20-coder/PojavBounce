@@ -25,7 +25,7 @@ import net.ccbluex.liquidbounce.config.types.NamedChoice
 import net.ccbluex.liquidbounce.config.types.VALUE_NAME_ORDER
 import net.ccbluex.liquidbounce.config.types.Value
 import net.ccbluex.liquidbounce.config.types.nesting.Configurable
-import net.ccbluex.liquidbounce.features.command.Parameter.Verificator.Result
+import net.ccbluex.liquidbounce.features.command.ParameterValidationResult
 import net.ccbluex.liquidbounce.features.module.ClientModule
 import net.ccbluex.liquidbounce.features.module.ModuleManager
 import net.ccbluex.liquidbounce.utils.client.mc
@@ -45,7 +45,7 @@ private fun <V : Value<*>> ParameterBuilder.Companion.value(
     predicate: (V) -> Boolean,
 ) = begin<V>(paramName)
     .verifiedBy { sourceText ->
-        Result.ofNullable(
+        ParameterValidationResult.ofNullable(
             all.firstOrNull { v -> v.name.equals(sourceText, true) && predicate(v) }
         ) { "'$sourceText' is not a valid $typeName" }
     }
@@ -68,9 +68,9 @@ private fun <V : Value<*>> ParameterBuilder.Companion.values(
             all.firstOrNull { v -> v.name.equals(it, true) && predicate(v) }
         }
         if (values.isEmpty()) {
-            Result.Error("'$sourceText' contains no valid $typeName")
+            ParameterValidationResult.Error("'$sourceText' contains no valid $typeName")
         } else {
-            Result.Ok(values)
+            ParameterValidationResult.Ok(values)
         }
     }
     .autocompletedWith { begin, _ ->
@@ -115,9 +115,9 @@ inline fun <reified T> ParameterBuilder.Companion.enumChoice(
         val values = enumValues<T>()
         val choice = values.firstOrNull { v -> v.choiceName.equals(sourceText, true) && predicate(v) }
         if (choice == null) {
-            Result.Error("$sourceText is not a valid choice")
+            ParameterValidationResult.Error("$sourceText is not a valid choice")
         } else {
-            Result.Ok(choice)
+            ParameterValidationResult.Ok(choice)
         }
     }
     .autocompletedWith { begin, _ ->
@@ -136,9 +136,9 @@ inline fun <reified T> ParameterBuilder.Companion.enumChoices(
             values.firstOrNull { v -> v.choiceName.equals(it, ignoreCase = true) }
         }
         if (choices.isEmpty()) {
-            Result.Error("$sourceText contains no valid choice")
+            ParameterValidationResult.Error("$sourceText contains no valid choice")
         } else {
-            Result.Ok(choices)
+            ParameterValidationResult.Ok(choices)
         }
     }
     .autocompletedWith { begin, _ ->
@@ -159,22 +159,24 @@ private fun <T : Any> ParameterBuilder.Companion.fromRegistry(
 ) = begin<T>(paramName)
     .verifiedBy { sourceText ->
         val id = Identifier.tryParse(sourceText)
-            ?: return@verifiedBy Result.Error("'$paramName' is not a valid Identifier")
+            ?: return@verifiedBy ParameterValidationResult.Error("'$paramName' is not a valid Identifier")
 
-        Result.ofNullable(
+        ParameterValidationResult.ofNullable(
             registry.getOptionalValue(id).getOrNull()
         ) { "$sourceText is not a valid $typeName" }
     }
-    .autocompletedFrom {
-        registry.ids.map { it.toString() }
+    .autocompletedWith { begin, _ ->
+        registry.ids.map { it.toString() }.filter { it.startsWith(begin, ignoreCase = true) }
     }
 
 fun ParameterBuilder.Companion.enchantment(
     name: String = "enchantment",
 ) = begin<String>(name)
     .verifiedBy(STRING_VALIDATOR)
-    .autocompletedFrom {
-        world.registryManager.getOrThrow(RegistryKeys.ENCHANTMENT).indexedEntries.map { it.idAsString }
+    .autocompletedWith { begin, _ ->
+        world.registryManager.getOrThrow(RegistryKeys.ENCHANTMENT).indexedEntries
+            .map { it.idAsString }
+            .filter { it.startsWith(begin, ignoreCase = true) }
     }
 
 fun ParameterBuilder.Companion.block(
@@ -185,16 +187,18 @@ fun ParameterBuilder.Companion.item(
     name: String = "item",
 ) = begin<String>(name)
     .verifiedBy(STRING_VALIDATOR)
-    .autocompletedFrom {
-        Registries.ITEM.ids.map { it.toString() }
+    .autocompletedWith { begin, _ ->
+        Registries.ITEM.ids.map { it.toString() }.filter { it.startsWith(begin, ignoreCase = true) }
     }
 
 fun ParameterBuilder.Companion.playerName(
     name: String = "playerName",
 ) = begin<String>(name)
     .verifiedBy(STRING_VALIDATOR)
-    .autocompletedFrom {
-        mc.networkHandler?.playerList?.map { it.profile.name }
+    .autocompletedWith { begin, _ ->
+        mc.networkHandler?.playerList?.map { it.profile.name }?.filter { 
+            it.startsWith(begin, ignoreCase = true) 
+        } ?: emptyList()
     }
 
 fun ParameterBuilder.Companion.valueName(

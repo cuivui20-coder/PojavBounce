@@ -31,7 +31,7 @@ enum class AutoFarmTrackedStates {
     Soulsand
 }
 
-object AutoFarmBlockTracker : AbstractBlockLocationTracker.State2BlockPos<AutoFarmTrackedStates>() {
+object AutoFarmBlockHandler : AbstractBlockLocationTracker.State2BlockPos<AutoFarmTrackedStates>() {
     override fun getStateFor(pos: BlockPos, state: BlockState): AutoFarmTrackedStates? {
         if (ModuleAutoFarm.isTargeted(state, pos)) {
             return AutoFarmTrackedStates.Destroy
