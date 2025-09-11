@@ -35,7 +35,9 @@ inline fun commandFactory(
     name: String,
     crossinline block: CommandBuilder.() -> Unit,
 ): CommandFactory {
-    return CommandFactory { buildCommand(name, block) }
+    return object : CommandFactory {
+        override fun createCommand(): Command = buildCommand(name, block)
+    }
 }
 
 context(context: Command.Handler.Context)

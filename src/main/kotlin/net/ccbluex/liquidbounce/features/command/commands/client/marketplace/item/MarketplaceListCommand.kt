@@ -54,8 +54,8 @@ fun marketplaceListCommand() = buildCommand("list") {
 
     this.suspendHandler { command, args ->
         val type = type.cast()
-        val page = if (page.value != null) page.cast() else 1
-        val featured = if (featured.value != null) featured.cast() else false
+        val page = try { page.cast() } catch (e: Exception) { 1 }
+        val featured = try { featured.cast() } catch (e: Exception) { false }
 
         val response = MarketplaceApi.getMarketplaceItems(page, 10, type = type, featured = featured)
 

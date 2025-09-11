@@ -1,3 +1,4 @@
+
 /*
  * This file is part of LiquidBounce (https://github.com/CCBlueX/LiquidBounce)
  *
@@ -19,10 +20,9 @@
 package net.ccbluex.liquidbounce.features.command.commands.client.marketplace.item
 
 import net.ccbluex.liquidbounce.api.services.marketplace.MarketplaceApi
-import net.ccbluex.liquidbounce.features.command.CommandExecutor.suspendHandler
 import net.ccbluex.liquidbounce.features.command.builder.ParameterBuilder
+import net.ccbluex.liquidbounce.features.command.CommandException
 import net.ccbluex.liquidbounce.features.command.dsl.addParam
-import net.ccbluex.liquidbounce.features.command.dsl.buildCommand
 import net.ccbluex.liquidbounce.features.command.dsl.cast
 import net.ccbluex.liquidbounce.features.command.preset.accountOrException
 import net.ccbluex.liquidbounce.features.cosmetic.ClientAccountManager
@@ -45,6 +45,5 @@ fun marketplaceDeleteItemCommand() = buildCommand("delete") {
 
         val id = id.cast()
         // Stubbed for native GUI - marketplace operations handled through web interface  
-        throw CommandException("Marketplace item deletion requires web interface access")
+        throw CommandException(regular("Marketplace item deletion requires web interface access"))
     }
-}

@@ -1,3 +1,4 @@
+
 /*
  * This file is part of LiquidBounce (https://github.com/CCBlueX/LiquidBounce)
  *
@@ -20,7 +21,7 @@ package net.ccbluex.liquidbounce.features.command.commands.client.marketplace.it
 
 import net.ccbluex.liquidbounce.api.models.marketplace.MarketplaceItemType
 import net.ccbluex.liquidbounce.api.services.marketplace.MarketplaceApi
-import net.ccbluex.liquidbounce.features.command.CommandExecutor.suspendHandler
+import net.ccbluex.liquidbounce.features.command.CommandException
 import net.ccbluex.liquidbounce.features.command.builder.ParameterBuilder
 import net.ccbluex.liquidbounce.features.command.builder.enumChoice
 import net.ccbluex.liquidbounce.features.command.dsl.addParam
@@ -61,20 +62,7 @@ fun marketplaceCreateItemCommand() = buildCommand("create") {
         val type = type.cast()
         val description = description.castVararg().joinToString(" ")
 
-        val response = run {
-            // Stubbed for native GUI - marketplace operations handled through web interface
-            throw CommandException("Marketplace item creation requires web interface access")
-        }
-
-        chat(
-            regular(
-                command.result(
-                    "success",
-                    variable(response.id.toString()),
-                    variable(response.name)
-                )
-            )
-        )
+        // Stubbed for native GUI - marketplace operations handled through web interface
+        throw CommandException(regular("Marketplace item creation requires web interface access"))
     }
 
-}

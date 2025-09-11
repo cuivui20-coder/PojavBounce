@@ -94,7 +94,7 @@ object MarketplaceUploadRevisionCommand : CommandFactory {
 
             try {
                 MarketplaceApi.createMarketplaceItemRevision(
-                    run { throw CommandException("Marketplace operations require web interface access") },
+                    run { throw CommandException(regular("Marketplace operations require web interface access")) },
                     id,
                     file,
                     version,
