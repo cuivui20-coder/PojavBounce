@@ -61,7 +61,7 @@ object ComponentOverlay : EventListener {
     }
 
     fun insertDefaultComponents() {
-        val componentList = ThemeManager.activeTheme.parseComponents()
+        val componentList = ThemeManager.activeTheme.components
 
         // todo: fix custom components being removed
         components.clear()

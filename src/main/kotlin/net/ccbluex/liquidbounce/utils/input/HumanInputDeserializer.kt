@@ -87,6 +87,10 @@ object HumanInputDeserializer {
 
     val keyDeserializer: StringDeserializer<InputUtil.Key> = StringDeserializer(::inputByName)
 
+    val pathDeserializer: StringDeserializer<java.nio.file.Path> = StringDeserializer { str ->
+        java.nio.file.Paths.get(str)
+    }
+
     fun <T> parseArray(str: String, componentDeserializer: StringDeserializer<T>): MutableList<T> {
         return str.split(",").mapTo(ArrayList(), componentDeserializer::deserializeThrowing)
     }

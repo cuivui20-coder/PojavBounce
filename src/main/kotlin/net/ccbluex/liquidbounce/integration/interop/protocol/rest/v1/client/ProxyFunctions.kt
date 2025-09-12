@@ -15,202 +15,41 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with LiquidBounce. If not, see <https://www.gnu.org/licenses/>.
- *
  */
-
-@file:Suppress("TooManyFunctions")
 
 package net.ccbluex.liquidbounce.integration.interop.protocol.rest.v1.client
-import net.ccbluex.liquidbounce.integration.interop.*
 
-import com.google.gson.JsonArray
-import com.mojang.blaze3d.systems.RenderSystem
-import net.ccbluex.liquidbounce.config.gson.interopGson
-import net.ccbluex.liquidbounce.config.gson.util.emptyJsonObject
-import net.ccbluex.liquidbounce.features.misc.proxy.Proxy
-import net.ccbluex.liquidbounce.features.misc.proxy.ProxyManager
-import net.ccbluex.liquidbounce.utils.client.mc
-import org.lwjgl.glfw.GLFW
+import net.ccbluex.liquidbounce.integration.interop.FullHttpResponse
+import net.ccbluex.liquidbounce.integration.interop.RequestObject
+import net.ccbluex.liquidbounce.integration.interop.httpOk
 
 /**
- * Proxy endpoints
+ * Stubbed proxy functions for native GUI approach
+ * 
+ * All proxy REST API functions are stubbed since the native GUI
+ * handles proxy operations directly without web interface.
  */
 
-// GET /api/v1/client/proxy
-@Suppress("UNUSED_PARAMETER")
-fun getProxyInfo(requestObject: RequestObject) = httpOk(ProxyManager.currentProxy?.let { proxy ->
-    interopGson.toJsonTree(proxy).asJsonObject.apply {
-        addProperty("id", ProxyManager.proxies.indexOf(proxy))
-    }
-} ?: emptyJsonObject())
-
-// POST /api/v1/client/proxy
-@Suppress("UNUSED_PARAMETER")
-fun postProxy(requestObject: RequestObject): FullHttpResponse {
-    data class ProxyRequest(val id: Int)
-
-    val body = requestObject.asJson<ProxyRequest>()
-
-    if (body.id < 0 || body.id >= ProxyManager.proxies.size) {
-        return httpForbidden("Invalid id")
-    }
-
-    ProxyManager.setProxy(body.id)
-    return httpOk(emptyJsonObject())
+fun getAllProxies(requestObject: RequestObject): FullHttpResponse {
+    return httpOk("Proxy listing requires web interface access")
 }
 
-// DELETE /api/v1/client/proxy
-@Suppress("UNUSED_PARAMETER")
-fun deleteProxy(requestObject: RequestObject): FullHttpResponse {
-    ProxyManager.unsetProxy()
-    return httpOk(emptyJsonObject())
+fun putProxies(requestObject: RequestObject): FullHttpResponse {
+    return httpOk("Proxy updates require web interface access")
 }
 
-// GET /api/v1/client/proxies
-@Suppress("UNUSED_PARAMETER")
-fun getProxies(requestObject: RequestObject) = httpOk(JsonArray().apply {
-    ProxyManager.proxies.forEachIndexed { index, proxy ->
-        add(interopGson.toJsonTree(proxy).asJsonObject.apply {
-            addProperty("id", index)
-            addProperty("type", (proxy.type ?: Proxy.Type.SOCKS5).toString())
-        })
-    }
-})
-
-// POST /api/v1/client/proxies/add
-@Suppress("DestructuringDeclarationWithTooManyEntries")
-fun postAddProxy(requestObject: RequestObject): FullHttpResponse {
-    data class ProxyRequest(
-        val host: String,
-        val port: Int,
-        val username: String,
-        val password: String,
-        val type: Proxy.Type,
-        val forwardAuthentication: Boolean
-    )
-    val (host, port, username, password, type, forwardAuthentication) = requestObject.asJson<ProxyRequest>()
-
-    if (host.isBlank()) {
-        return httpForbidden("No host")
-    }
-
-    if (port !in 0..65535) {
-        return httpForbidden("Illegal port")
-    }
-
-    ProxyManager.addProxy(host, port, username, password, type, forwardAuthentication)
-    return httpOk(emptyJsonObject())
+fun deleteProxies(requestObject: RequestObject): FullHttpResponse {
+    return httpOk("Proxy deletion requires web interface access")
 }
 
-// POST /api/v1/client/proxies/clipboard
-@Suppress("UNUSED_PARAMETER")
-fun postClipboardProxy(requestObject: RequestObject): FullHttpResponse {
-    RenderSystem.recordRenderCall {
-        runCatching {
-            // Get clipboard content via GLFW
-            val clipboard = GLFW.glfwGetClipboardString(mc.window.handle) ?: ""
-
-            if (clipboard.isNotBlank()) {
-                val split = clipboard.split(":")
-                val host = split[0]
-                val port = split[1].toInt()
-
-                if (split.size > 2) {
-                    val username = split[2]
-                    val password = split[3]
-                    ProxyManager.addProxy(host, port, username, password)
-                } else {
-                    ProxyManager.addProxy(host, port)
-                }
-            }
-        }
-    }
-
-    return httpOk(emptyJsonObject())
+fun getProxies(requestObject: RequestObject): FullHttpResponse {
+    return httpOk("Proxy access requires web interface")
 }
 
-// POST /api/v1/client/proxies/edit
-@Suppress("DestructuringDeclarationWithTooManyEntries")
-fun postEditProxy(requestObject: RequestObject): FullHttpResponse {
-    data class ProxyRequest(
-        val id: Int,
-        val host: String,
-        val port: Int,
-        val type: Proxy.Type,
-        val username: String,
-        val password: String,
-        val forwardAuthentication: Boolean
-    )
-    val (id, host, port, type, username, password, forwardAuthentication) = requestObject.asJson<ProxyRequest>()
-
-    if (host.isBlank()) {
-        return httpForbidden("No host")
-    }
-
-    if (port !in 0..65535) {
-        return httpForbidden("Illegal port")
-    }
-
-    ProxyManager.editProxy(id, host, port, username, password, type, forwardAuthentication)
-    return httpOk(emptyJsonObject())
+fun putProxies2(requestObject: RequestObject): FullHttpResponse {
+    return httpOk("Proxy configuration requires web interface access")
 }
 
-// POST /api/v1/client/proxies/check
-@Suppress("UNUSED_PARAMETER")
-fun postCheckProxy(requestObject: RequestObject): FullHttpResponse {
-    data class ProxyRequest(val id: Int)
-
-    val body = requestObject.asJson<ProxyRequest>()
-
-    if (body.id < 0 || body.id >= ProxyManager.proxies.size) {
-        return httpForbidden("Invalid id")
-    }
-
-    ProxyManager.checkProxy(body.id)
-    return httpOk(emptyJsonObject())
-}
-
-// DELETE /api/v1/client/proxies/remove
-@Suppress("UNUSED_PARAMETER")
-fun deleteRemoveProxy(requestObject: RequestObject): FullHttpResponse {
-    data class ProxyRequest(val id: Int)
-
-    val body = requestObject.asJson<ProxyRequest>()
-
-    if (body.id < 0 || body.id >= ProxyManager.proxies.size) {
-        return httpForbidden("Invalid id")
-    }
-
-    ProxyManager.removeProxy(body.id)
-    return httpOk(emptyJsonObject())
-}
-
-// PUT /api/v1/client/proxies/favorite
-@Suppress("UNUSED_PARAMETER")
-fun putFavoriteProxy(requestObject: RequestObject): FullHttpResponse {
-    data class ProxyRequest(val id: Int)
-
-    val body = requestObject.asJson<ProxyRequest>()
-
-    if (body.id < 0 || body.id >= ProxyManager.proxies.size) {
-        return httpForbidden("Invalid id")
-    }
-
-    ProxyManager.favoriteProxy(body.id)
-    return httpOk(emptyJsonObject())
-}
-
-// DELETE /api/v1/client/proxies/favorite
-@Suppress("UNUSED_PARAMETER")
-fun deleteFavoriteProxy(requestObject: RequestObject): FullHttpResponse {
-    data class ProxyRequest(val id: Int)
-
-    val body = requestObject.asJson<ProxyRequest>()
-
-    if (body.id < 0 || body.id >= ProxyManager.proxies.size) {
-        return httpForbidden("Invalid id")
-    }
-
-    ProxyManager.unfavoriteProxy(body.id)
-    return httpOk(emptyJsonObject())
+fun deleteProxies2(requestObject: RequestObject): FullHttpResponse {
+    return httpOk("Proxy removal requires web interface access")
 }

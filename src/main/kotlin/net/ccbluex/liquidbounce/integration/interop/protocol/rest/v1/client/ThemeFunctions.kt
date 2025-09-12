@@ -15,48 +15,22 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with LiquidBounce. If not, see <https://www.gnu.org/licenses/>.
- *
  */
+
 package net.ccbluex.liquidbounce.integration.interop.protocol.rest.v1.client
-import net.ccbluex.liquidbounce.integration.interop.*
 
-import com.google.gson.JsonArray
-import com.google.gson.JsonObject
-import net.ccbluex.liquidbounce.config.ConfigSystem
-import net.ccbluex.liquidbounce.config.gson.util.emptyJsonObject
-import net.ccbluex.liquidbounce.integration.theme.ThemeManager
-import net.ccbluex.liquidbounce.render.FontManager
+import net.ccbluex.liquidbounce.integration.interop.FullHttpResponse
+import net.ccbluex.liquidbounce.integration.interop.RequestObject
+import net.ccbluex.liquidbounce.integration.interop.httpOk
 
-// GET /api/v1/client/theme
-@Suppress("UNUSED_PARAMETER")
-fun getThemeInfo(requestObject: RequestObject): FullHttpResponse = httpOk(JsonObject().apply {
-    addProperty("activeTheme", ThemeManager.activeTheme.name)
-    addProperty("shaderEnabled", ThemeManager.shaderEnabled)
-})
+/**
+ * Stubbed theme functions for native GUI approach
+ */
 
-// POST /api/v1/client/shader
-@Suppress("UNUSED_PARAMETER")
-fun postToggleShader(requestObject: RequestObject): FullHttpResponse {
-    ThemeManager.shaderEnabled = !ThemeManager.shaderEnabled
-    ConfigSystem.storeConfigurable(ThemeManager)
-    return httpOk(emptyJsonObject())
+fun getThemeInfo(requestObject: RequestObject): FullHttpResponse {
+    return httpOk("Theme info requires web interface access")
 }
 
-
-// GET /api/v1/client/fonts
-@Suppress("UNUSED_PARAMETER")
-fun getFonts(requestObject: RequestObject): FullHttpResponse = httpOk(JsonArray().apply {
-    FontManager.fontFaces.forEach { (name, _) ->
-        add(name)
-    }
-})
-
-// GET /api/v1/client/fonts/:name
-@Suppress("UNUSED_PARAMETER")
-fun getFont(requestObject: RequestObject): FullHttpResponse {
-    val name = requestObject.params["name"] ?: return httpBadRequest("Missing font name")
-    val font = FontManager.fontFace(name) ?: return httpNotFound(name, "Font not found")
-    val file = font.file ?: return httpNoContent()
-
-    return httpFile(file)
+fun postToggleShader(requestObject: RequestObject): FullHttpResponse {
+    return httpOk("Shader toggle requires web interface access")
 }

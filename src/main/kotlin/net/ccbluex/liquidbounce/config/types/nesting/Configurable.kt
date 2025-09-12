@@ -281,9 +281,9 @@ open class Configurable(
 
     fun block(name: String, default: Block) = value(name, default, ValueType.BLOCK)
 
-    fun vec3i(name: String, default: Vec3i) = value(name, default, ValueType.VECTOR_I)
+    fun vec3i(name: String, default: Vec3i) = value(name, default, ValueType.VECTOR3_I)
 
-    fun vec3d(name: String, default: Vec3d) = value(name, default, ValueType.VECTOR_D)
+    fun vec3d(name: String, default: Vec3d) = value(name, default, ValueType.VECTOR3_D)
 
     fun <C : MutableSet<Block>> blocks(name: String, default: C) =
         registryList(name, default, ValueType.BLOCK)

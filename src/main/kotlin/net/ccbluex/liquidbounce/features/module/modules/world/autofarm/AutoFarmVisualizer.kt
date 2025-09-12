@@ -94,7 +94,7 @@ object AutoFarmVisualizer : ToggleableConfigurable(ModuleAutoFarm, "Visualize", 
                     if ((pos.x - player.x).sq() + (pos.z - player.z).sq() > rangeSquared) continue
 
                     withPositionRelativeToCamera(pos.toVec3d()) {
-                        if (type == AutoFarmTrackedStates.Destroy) {
+                        if (type == AutoFarmTrackedState.SHOULD_BE_DESTROYED) {
                             withColor(fillColor) {
                                 drawSolidBox(FULL_BOX)
                             }
@@ -105,7 +105,7 @@ object AutoFarmVisualizer : ToggleableConfigurable(ModuleAutoFarm, "Visualize", 
 
                         }
 
-                        if (outline && type == AutoFarmTrackedStates.Destroy) {
+                        if (outline && type == AutoFarmTrackedState.SHOULD_BE_DESTROYED) {
                             withColor(outlineColor) {
                                 drawOutlinedBox(FULL_BOX)
                             }

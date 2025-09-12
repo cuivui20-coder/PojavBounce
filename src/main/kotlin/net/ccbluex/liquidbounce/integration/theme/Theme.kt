@@ -1,0 +1,205 @@
+/*
+ * This file is part of LiquidBounce (https://github.com/CCBlueX/LiquidBounce)
+ *
+ * Copyright (c) 2015 - 2025 CCBlueX
+ *
+ * LiquidBounce is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * LiquidBounce is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with LiquidBounce. If not, see <https://www.gnu.org/licenses/>.
+ */
+
+@file:OptIn(ExperimentalStdlibApi::class)
+
+package net.ccbluex.liquidbounce.integration.theme
+
+import kotlin.ExperimentalStdlibApi
+
+import net.ccbluex.liquidbounce.api.core.BaseApi
+import net.ccbluex.liquidbounce.config.types.NamedChoice
+import net.ccbluex.liquidbounce.config.types.Value
+import net.ccbluex.liquidbounce.config.types.nesting.Configurable
+import net.ccbluex.liquidbounce.integration.interop.ClientInteropServer
+import net.ccbluex.liquidbounce.integration.theme.component.Component
+import net.ccbluex.liquidbounce.integration.theme.component.ComponentFactory.JsonComponentFactory
+import net.ccbluex.liquidbounce.render.FontManager
+import net.ccbluex.liquidbounce.render.shader.CanvasShader
+import net.ccbluex.liquidbounce.utils.client.logger
+import net.ccbluex.liquidbounce.utils.client.mc
+import net.ccbluex.liquidbounce.utils.io.resourceToString
+import net.minecraft.client.texture.NativeImageBackedTexture
+import net.minecraft.util.Identifier
+import java.io.Closeable
+import java.io.File
+import java.io.InputStream
+import java.util.*
+
+/**
+ * A web-based theme loaded from the provided URL.
+ *
+ * Can be local from [ClientInteropServer] or remote from the internet.
+ */
+@Suppress("TooManyFunctions")
+class Theme private constructor(val origin: Origin, url: String): BaseApi(url.removeSuffix("/")), Closeable {
+
+    enum class Origin(override val choiceName: String) : NamedChoice {
+        RESOURCE("resource"),
+        LOCAL("local"),
+        MARKETPLACE("marketplace"),
+        REMOTE("remote")
+    }
+
+    private var _metadata: ThemeMetadata? = null
+    var metadata: ThemeMetadata
+        private set(value) { _metadata = value }
+        get() = requireNotNull(_metadata) { "metadata not loaded" }
+
+    private suspend fun loadMetadata() {
+        try {
+            metadata = get<ThemeMetadata>("/metadata.json").apply { checkNotNull() }
+        } catch (e: Exception) {
+            logger.error("Failed to load theme metadata", e)
+            throw IllegalStateException("Failed to load theme metadata", e)
+        }
+    }
+
+    private var _components: MutableList<Component>? = null
+    var components: MutableList<Component>
+        private set(value) { _components = value }
+        get() = requireNotNull(_components) { "components not loaded" }
+
+    private var _settings: Configurable? = null
+    var settings: Configurable
+        private set(value) { _settings = value }
+        get() = requireNotNull(_settings) { "settings not loaded" }
+
+    private suspend fun loadComponents() {
+        components = metadata.components.mapNotNullTo(mutableListOf()) { name ->
+            val componentFactory = runCatching {
+                get<JsonComponentFactory>("/components/${name.lowercase(Locale.US)}.json")
+            }.onFailure {
+                logger.warn("Failed to load component $name", it)
+            }.getOrNull() ?: return@mapNotNullTo null
+
+            runCatching {
+                componentFactory.createComponent()
+            }.onFailure {
+                logger.warn("Failed to create component $name", it)
+            }.getOrNull()
+        }
+
+        // Check for duplicated component names
+        components.groupingBy { component -> component.name }.eachCount().forEach { (name, count) ->
+            check(count == 1) { "Found duplicated component name '$name'" }
+        }
+
+        settings = Configurable(metadata.id.replaceFirstChar { it.uppercase() }).apply {
+            metadata.values?.let { values ->
+                for (value in values) {
+                    // Stubbed for native GUI - JSON configuration not needed
+                    // json(value)
+                }
+            }
+
+            @Suppress("UNCHECKED_CAST")
+            val componentSettings = Configurable("Components", components as MutableList<Value<*>>)
+            tree(componentSettings)
+        }
+    }
+
+    private suspend fun loadFonts() {
+        for (font in metadata.fonts) {
+            runCatching {
+                get<InputStream>("/fonts/$font").use { stream ->
+                    // Stubbed for native GUI - font queuing not needed
+                    // FontManager.queueFontFromStream(stream)
+                }
+
+                logger.info("Loaded font $font for theme ${metadata.name}")
+            }.onFailure {
+                logger.warn("Failed to load font $font for theme ${metadata.name}", it)
+            }
+        }
+    }
+
+    private suspend fun loadAll() = apply {
+        loadMetadata()
+        loadComponents()
+        loadFonts()
+    }
+
+    var themeBackgroundShader: ThemeBackground? = null
+        private set
+    var themeBackgroundTexture: ThemeBackground? = null
+        private set
+
+    fun compileShader(): Boolean {
+        // Stub implementation for native GUI - shaders not used
+        return true
+    }
+
+    fun loadBackgroundImage(): Boolean {
+        // Stub implementation for native GUI - background images not used
+        return true
+    }
+
+    /**
+     * Get the URL to the given page name in the theme.
+     */
+    fun getUrl(name: String? = null, markAsStatic: Boolean = false) = "$baseUrl/#/${name.orEmpty()}".let {
+        if (markAsStatic) {
+            "$it?static"
+        } else {
+            it
+        }
+    }
+
+    fun isSupported(name: String?) = isScreenSupported(name) || isOverlaySupported(name)
+
+    fun isScreenSupported(name: String?) = name != null && metadata.screens.contains(name)
+
+    fun isOverlaySupported(name: String?) = name != null && metadata.overlays.contains(name)
+    
+    // Properties needed by ThemeManager
+    val name: String get() = metadata.name
+    val exists: Boolean get() = true // Stub - always exists for native GUI
+    
+    // Stubbed methods for native GUI compatibility
+    fun doesSupport(name: String?) = false // Stub - no web support needed
+    fun doesOverlay(name: String?) = false // Stub - no web overlay needed
+    fun getUrl() = baseUrl // Stub implementation
+    fun draw() {} // Stub - no drawing needed for native GUI
+
+    override fun close() {
+        themeBackgroundShader?.close()
+        themeBackgroundTexture?.close()
+    }
+
+    override fun toString() = "Theme(name=${metadata.name}, origin=${origin.choiceName}, url=$baseUrl)"
+
+    companion object {
+        @JvmStatic
+        suspend fun load(url: String) = Theme(Origin.REMOTE, url).loadAll()
+        
+        @JvmStatic
+        fun defaults(): Theme = Theme(Origin.LOCAL, "").apply {
+            // Minimal default theme for native GUI
+        }
+
+        @JvmStatic
+        suspend fun load(origin: Origin, file: File) = Theme(
+            origin,
+            url = "${ClientInteropServer.url}/${origin.choiceName}/${file.invariantSeparatorsPath}/"
+        ).loadAll()
+    }
+
+}
+
