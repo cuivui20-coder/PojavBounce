@@ -15,97 +15,22 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with LiquidBounce. If not, see <https://www.gnu.org/licenses/>.
- *
- *
  */
 
 package net.ccbluex.liquidbounce.integration.interop.protocol.rest.v1.client
-import net.ccbluex.liquidbounce.integration.interop.*
 
-import com.google.gson.JsonObject
-import com.mojang.blaze3d.systems.RenderSystem
-import net.ccbluex.liquidbounce.config.gson.util.emptyJsonObject
-import net.ccbluex.liquidbounce.integration.IntegrationListener
-import net.ccbluex.liquidbounce.integration.VirtualDisplayScreen
-import net.ccbluex.liquidbounce.integration.VirtualScreenType
-import net.ccbluex.liquidbounce.utils.client.inGame
-import net.ccbluex.liquidbounce.utils.client.mc
-import net.minecraft.client.gui.screen.SplashOverlay
-import net.minecraft.client.gui.screen.TitleScreen
+import net.ccbluex.liquidbounce.integration.interop.FullHttpResponse
+import net.ccbluex.liquidbounce.integration.interop.RequestObject
+import net.ccbluex.liquidbounce.integration.interop.httpOk
 
-// GET /api/v1/client/virtualScreen
-@Suppress("UNUSED_PARAMETER")
-fun getVirtualScreenInfo(requestObject: RequestObject): FullHttpResponse {
-    return httpOk(JsonObject().apply {
-        addProperty("name", IntegrationListener.momentaryVirtualScreen?.type?.routeName)
-        addProperty("showingSplash", mc.overlay is SplashOverlay)
-    })
+/**
+ * Stubbed screen functions for native GUI approach
+ */
+
+fun getVirtualScreenInfo(requestObject: RequestObject): String {
+    return "Screen info requires web interface access"
 }
 
-// POST /api/v1/client/virtualScreen
-fun postVirtualScreen(requestObject: RequestObject): FullHttpResponse {
-    val body = requestObject.asJson<JsonObject>()
-    val name = body["name"]?.asString ?: return httpForbidden("No name")
-
-    val virtualScreen = IntegrationListener.momentaryVirtualScreen
-    if ((virtualScreen?.type?.routeName ?: "none") != name) {
-        return httpForbidden("Wrong virtual screen")
-    }
-
-    IntegrationListener.acknowledgement.confirm()
-    return httpOk(emptyJsonObject())
-}
-
-// GET /api/v1/client/screen
-@Suppress("UNUSED_PARAMETER")
-fun getScreenInfo(requestObject: RequestObject): FullHttpResponse {
-    val mcScreen = mc.currentScreen ?: return httpForbidden("No screen")
-    val name = VirtualScreenType.recognize(mcScreen)?.routeName ?: mcScreen::class.qualifiedName
-
-    return httpOk(JsonObject().apply {
-        addProperty("name", name)
-    })
-}
-
-// GET /api/v1/client/screen/size
-@Suppress("UNUSED_PARAMETER")
-fun getScreenSize(requestObject: RequestObject): FullHttpResponse {
-    return httpOk(JsonObject().apply {
-        addProperty("width", mc.window.scaledWidth)
-        addProperty("height", mc.window.scaledHeight)
-    })
-}
-
-// PUT /api/v1/client/screen
-fun putScreen(requestObject: RequestObject): FullHttpResponse {
-    val body = requestObject.asJson<JsonObject>()
-    val screenName = body["name"]?.asString ?: return httpForbidden("No screen name")
-
-    VirtualScreenType.byName(screenName)?.open()
-        ?: return httpForbidden("No screen with name $screenName")
-    return httpOk(emptyJsonObject())
-}
-
-// DELETE /api/v1/client/screen
-@Suppress("UNUSED_PARAMETER")
-fun deleteScreen(requestObject: RequestObject): FullHttpResponse {
-    val screen = mc.currentScreen ?: return httpForbidden("No screen")
-
-    if (screen is VirtualDisplayScreen && screen.parentScreen != null) {
-        RenderSystem.recordRenderCall {
-            mc.setScreen(screen.parentScreen)
-        }
-        return httpNoContent()
-    }
-
-    RenderSystem.recordRenderCall {
-        mc.setScreen(
-            if (inGame) {
-                null
-            } else {
-                TitleScreen()
-            }
-        )
-    }
-    return httpNoContent()
+fun postToggleVirtualScreen(requestObject: RequestObject): FullHttpResponse {
+    return httpOk("Screen toggle requires web interface access")
 }

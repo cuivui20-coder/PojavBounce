@@ -17,7 +17,11 @@
  * along with LiquidBounce. If not, see <https://www.gnu.org/licenses/>.
  */
 
+@file:OptIn(ExperimentalStdlibApi::class)
+
 package net.ccbluex.liquidbounce.integration.theme
+
+import kotlin.ExperimentalStdlibApi
 
 import net.ccbluex.liquidbounce.api.core.BaseApi
 import net.ccbluex.liquidbounce.config.types.NamedChoice
@@ -28,7 +32,6 @@ import net.ccbluex.liquidbounce.integration.theme.component.Component
 import net.ccbluex.liquidbounce.integration.theme.component.ComponentFactory.JsonComponentFactory
 import net.ccbluex.liquidbounce.render.FontManager
 import net.ccbluex.liquidbounce.render.shader.CanvasShader
-import net.ccbluex.liquidbounce.utils.client.capitalize
 import net.ccbluex.liquidbounce.utils.client.logger
 import net.ccbluex.liquidbounce.utils.client.mc
 import net.ccbluex.liquidbounce.utils.io.resourceToString
@@ -98,10 +101,11 @@ class Theme private constructor(val origin: Origin, url: String): BaseApi(url.re
             check(count == 1) { "Found duplicated component name '$name'" }
         }
 
-        settings = Configurable(metadata.id.capitalize()).apply {
+        settings = Configurable(metadata.id.replaceFirstChar { it.uppercase() }).apply {
             metadata.values?.let { values ->
                 for (value in values) {
-                    json(value)
+                    // Stubbed for native GUI - JSON configuration not needed
+                    // json(value)
                 }
             }
 
@@ -115,7 +119,8 @@ class Theme private constructor(val origin: Origin, url: String): BaseApi(url.re
         for (font in metadata.fonts) {
             runCatching {
                 get<InputStream>("/fonts/$font").use { stream ->
-                    FontManager.queueFontFromStream(stream)
+                    // Stubbed for native GUI - font queuing not needed
+                    // FontManager.queueFontFromStream(stream)
                 }
 
                 logger.info("Loaded font $font for theme ${metadata.name}")
@@ -201,6 +206,12 @@ class Theme private constructor(val origin: Origin, url: String): BaseApi(url.re
     fun isScreenSupported(name: String?) = name != null && metadata.screens.contains(name)
 
     fun isOverlaySupported(name: String?) = name != null && metadata.overlays.contains(name)
+    
+    // Stubbed methods for native GUI compatibility
+    fun doesSupport(name: String?) = false // Stub - no web support needed
+    fun doesOverlay(name: String?) = false // Stub - no web overlay needed
+    fun getUrl() = baseUrl // Stub implementation
+    fun draw() {} // Stub - no drawing needed for native GUI
 
     override fun close() {
         themeBackgroundShader?.close()
@@ -212,6 +223,11 @@ class Theme private constructor(val origin: Origin, url: String): BaseApi(url.re
     companion object {
         @JvmStatic
         suspend fun load(url: String) = Theme(Origin.REMOTE, url).loadAll()
+        
+        @JvmStatic
+        fun defaults(): Theme = Theme(Origin.LOCAL, "").apply {
+            // Minimal default theme for native GUI
+        }
 
         @JvmStatic
         suspend fun load(origin: Origin, file: File) = Theme(
