@@ -191,7 +191,20 @@ class Theme private constructor(val origin: Origin, url: String): BaseApi(url.re
         
         @JvmStatic
         fun defaults(): Theme = Theme(Origin.LOCAL, "").apply {
-            // Minimal default theme for native GUI
+            // Minimal default theme for native GUI - initialize required fields
+            _metadata = ThemeMetadata(
+                id = "default",
+                name = "Default",
+                version = "1.0.0",
+                authors = listOf("LiquidBounce"),
+                screens = emptyList(),
+                overlays = emptyList(),
+                components = emptyList(),
+                fonts = emptyList(),
+                backgrounds = emptyList()
+            )
+            _components = mutableListOf()
+            _settings = Configurable("Default")
         }
 
         @JvmStatic
