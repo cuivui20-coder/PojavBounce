@@ -23,6 +23,7 @@ import net.ccbluex.liquidbounce.features.command.CommandExecutor.suspendHandler
 import net.ccbluex.liquidbounce.features.command.builder.ParameterBuilder
 import net.ccbluex.liquidbounce.features.command.builder.CommandBuilder
 import net.ccbluex.liquidbounce.features.command.CommandException
+import net.ccbluex.liquidbounce.features.command.builder.enumChoice
 import net.ccbluex.liquidbounce.utils.client.*
 
 /**
@@ -32,7 +33,7 @@ import net.ccbluex.liquidbounce.utils.client.*
 fun marketplaceListCommand() = CommandBuilder
     .begin("list")
     .parameter(
-        ParameterBuilder.Companion.enumChoice<MarketplaceItemType>("type") { it.isListable }
+        ParameterBuilder.enumChoice<MarketplaceItemType>("type") { it.isListable }
             .required()
             .build()
     )

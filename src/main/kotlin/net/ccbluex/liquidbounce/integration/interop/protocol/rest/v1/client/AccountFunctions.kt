@@ -1,202 +1,71 @@
-@file:Suppress("TooManyFunctions")
+/*
+ * This file is part of LiquidBounce (https://github.com/CCBlueX/LiquidBounce)
+ *
+ * Copyright (c) 2015 - 2025 CCBlueX
+ *
+ * LiquidBounce is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * LiquidBounce is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with LiquidBounce. If not, see <https://www.gnu.org/licenses/>.
+ */
 
 package net.ccbluex.liquidbounce.integration.interop.protocol.rest.v1.client
-import net.ccbluex.liquidbounce.integration.interop.*
 
-import com.google.gson.JsonArray
-import com.google.gson.JsonObject
-import com.mojang.blaze3d.systems.RenderSystem
-import net.ccbluex.liquidbounce.api.core.formatAvatarUrl
-import net.ccbluex.liquidbounce.config.gson.interopGson
-import net.ccbluex.liquidbounce.config.gson.util.emptyJsonObject
-import net.ccbluex.liquidbounce.event.EventManager
-import net.ccbluex.liquidbounce.event.events.AccountManagerMessageEvent
-import net.ccbluex.liquidbounce.features.misc.AccountManager
-import net.ccbluex.liquidbounce.utils.client.browseUrl
-import net.ccbluex.liquidbounce.utils.client.mc
-import net.ccbluex.liquidbounce.utils.client.randomUsername
-import org.lwjgl.glfw.GLFW
+import net.ccbluex.liquidbounce.integration.interop.FullHttpResponse
+import net.ccbluex.liquidbounce.integration.interop.RequestObject
+import net.ccbluex.liquidbounce.integration.interop.httpOk
 
-// GET /api/v1/client/accounts
-@Suppress("UNUSED_PARAMETER")
-fun getAccounts(requestObject: RequestObject): FullHttpResponse {
-    val accounts = JsonArray()
-    for ((i, account) in AccountManager.accounts.withIndex()) {
-        val profile = account.profile ?: continue
+/**
+ * Stubbed account functions for native GUI approach
+ * 
+ * All account management REST API functions are stubbed since
+ * the native GUI handles account operations directly.
+ */
 
-        accounts.add(JsonObject().apply {
-            addProperty("id", i)
-            addProperty("username", profile.username)
-            addProperty("uuid", profile.uuid.toString())
-            addProperty("avatar", formatAvatarUrl(profile.uuid, profile.username))
-            add("bans", interopGson.toJsonTree(account.bans))
-            addProperty("type", account.type)
-            addProperty("favorite", account.favorite)
-        })
-    }
-    return httpOk(accounts)
+fun getAccountInfo(requestObject: RequestObject): FullHttpResponse {
+    return httpOk("Account info requires web interface access")
 }
 
-// POST /api/v1/client/accounts/new/microsoft
-@Suppress("UNUSED_PARAMETER")
-fun postNewMicrosoftAccount(requestObject: RequestObject): FullHttpResponse {
-    AccountManager.newMicrosoftAccount {
-        browseUrl(it)
-        EventManager.callEvent(AccountManagerMessageEvent("Opened login url in browser"))
-    }
-    return httpOk(emptyJsonObject())
+fun postAccountLogin(requestObject: RequestObject): FullHttpResponse {
+    return httpOk("Account login requires web interface access")  
 }
 
-// POST /api/v1/client/accounts/clipboard
-@Suppress("UNUSED_PARAMETER")
-fun postClipboardMicrosoftAccount(requestObject: RequestObject): FullHttpResponse {
-    AccountManager.newMicrosoftAccount {
-        RenderSystem.recordRenderCall {
-            GLFW.glfwSetClipboardString(mc.window.handle, it)
-            EventManager.callEvent(AccountManagerMessageEvent("Copied login url to clipboard"))
-        }
-    }
-    return httpOk(emptyJsonObject())
+fun postAccountLogout(requestObject: RequestObject): FullHttpResponse {
+    return httpOk("Account logout requires web interface access")
 }
 
-// POST /api/v1/client/accounts/new/cracked
-@Suppress("UNUSED_PARAMETER")
-fun postNewCrackedAccount(requestObject: RequestObject): FullHttpResponse {
-    data class AccountForm(val username: String, val online: Boolean?)
-    val accountForm = requestObject.asJson<AccountForm>()
-
-    AccountManager.newCrackedAccount(accountForm.username, accountForm.online ?: false)
-    return httpOk(emptyJsonObject())
+fun postAccountRefresh(requestObject: RequestObject): FullHttpResponse {
+    return httpOk("Account refresh requires web interface access")
 }
 
-// POST /api/v1/client/accounts/new/session
-@Suppress("UNUSED_PARAMETER")
-fun postNewSessionAccount(requestObject: RequestObject): FullHttpResponse {
-    data class AccountForm(val token: String)
-    val accountForm = requestObject.asJson<AccountForm>()
-
-    AccountManager.newSessionAccount(accountForm.token)
-    return httpOk(emptyJsonObject())
-}
-
-// POST /api/v1/client/accounts/new/altening
-@Suppress("UNUSED_PARAMETER")
-fun postNewAlteningAccount(requestObject: RequestObject): FullHttpResponse {
-    data class AlteningForm(val token: String)
-    val accountForm = requestObject.asJson<AlteningForm>()
-    AccountManager.newAlteningAccount(accountForm.token)
-    return httpOk(emptyJsonObject())
-}
-
-// POST /api/v1/client/accounts/generate
-@Suppress("UNUSED_PARAMETER")
-fun postGenerateAlteningAccount(requestObject: RequestObject): FullHttpResponse {
-    data class AlteningGenForm(val apiToken: String)
-    val accountForm = requestObject.asJson<AlteningGenForm>()
-
-    AccountManager.generateAlteningAccount(accountForm.apiToken)
-    return httpOk(emptyJsonObject())
-}
-
-// POST /api/v1/client/accounts/swap
-@Suppress("UNUSED_PARAMETER")
-fun postSwapAccounts(requestObject: RequestObject): FullHttpResponse {
-    data class AccountForm(val from: Int, val to: Int)
-    val accountForm = requestObject.asJson<AccountForm>()
-
-    AccountManager.swapAccounts(accountForm.from, accountForm.to)
-    return httpOk(emptyJsonObject())
-}
-
-// POST /api/v1/client/accounts/order
-@Suppress("UNUSED_PARAMETER")
-fun postOrderAccounts(requestObject: RequestObject): FullHttpResponse {
-    data class AccountOrderRequest(val order: List<Int>)
-    val accountOrderRequest = requestObject.asJson<AccountOrderRequest>()
-
-    AccountManager.orderAccounts(accountOrderRequest.order)
-    return httpOk(emptyJsonObject())
-}
-
-// POST /api/v1/client/accounts/login
-@Suppress("UNUSED_PARAMETER")
-fun postLoginAccount(requestObject: RequestObject): FullHttpResponse {
-    data class AccountForm(val id: Int)
-    val accountForm = requestObject.asJson<AccountForm>()
-
-    AccountManager.loginAccount(accountForm.id)
-    return httpOk(emptyJsonObject())
-}
-
-// POST /api/v1/client/accounts/cracked
-@Suppress("UNUSED_PARAMETER")
-fun postLoginCrackedAccount(requestObject: RequestObject): FullHttpResponse {
-    data class AccountForm(val username: String, val online: Boolean?)
-    val accountForm = requestObject.asJson<AccountForm>()
-
-    AccountManager.loginCrackedAccount(accountForm.username, accountForm.online ?: false)
-    return httpOk(emptyJsonObject())
-}
-
-// POST /api/v1/client/accounts/session
-@Suppress("UNUSED_PARAMETER")
-fun postLoginSessionAccount(requestObject: RequestObject): FullHttpResponse {
-    data class AccountForm(val token: String)
-    val accountForm = requestObject.asJson<AccountForm>()
-
-    AccountManager.loginSessionAccount(accountForm.token)
-    return httpOk(emptyJsonObject())
-}
-
-// POST /api/v1/client/accounts/restore
-@Suppress("UNUSED_PARAMETER")
-fun postRestoreInitial(requestObject: RequestObject): FullHttpResponse {
-    AccountManager.restoreInitial()
-    return httpOk(interopGson.toJsonTree(mc.session))
-}
-
-// PUT /api/v1/client/accounts/favorite
-@Suppress("UNUSED_PARAMETER")
-fun putFavoriteAccount(requestObject: RequestObject): FullHttpResponse {
-    data class AccountForm(val id: Int)
-    val accountForm = requestObject.asJson<AccountForm>()
-
-    AccountManager.favoriteAccount(accountForm.id)
-    return httpOk(emptyJsonObject())
-}
-
-// DELETE /api/v1/client/accounts/favorite
-@Suppress("UNUSED_PARAMETER")
-fun deleteFavoriteAccount(requestObject: RequestObject): FullHttpResponse {
-    data class AccountForm(val id: Int)
-    val accountForm = requestObject.asJson<AccountForm>()
-
-    AccountManager.unfavoriteAccount(accountForm.id)
-    return httpOk(emptyJsonObject())
-}
-
-// DELETE /api/v1/client/accounts
-@Suppress("UNUSED_PARAMETER")
 fun deleteAccount(requestObject: RequestObject): FullHttpResponse {
-    data class AccountForm(val id: Int)
-    val accountForm = requestObject.asJson<AccountForm>()
-    val account = AccountManager.removeAccount(accountForm.id)
-
-    return httpOk(JsonObject().apply {
-        addProperty("id", accountForm.id)
-
-        val profile = account.profile ?: return@apply
-        addProperty("username", profile.username)
-        addProperty("uuid", profile.uuid.toString())
-        addProperty("avatar", formatAvatarUrl(profile.uuid, profile.username))
-        addProperty("type", account.type)
-    })
+    return httpOk("Account deletion requires web interface access")
 }
 
-// POST /api/v1/client/account/random-name
-@Suppress("UNUSED_PARAMETER")
-fun generateName(requestObject: RequestObject): FullHttpResponse {
-    return httpOk(JsonObject().apply {
-        addProperty("name", randomUsername())
-    })
+fun postAccountCreate(requestObject: RequestObject): FullHttpResponse {
+    return httpOk("Account creation requires web interface access")
+}
+
+fun getAllAccounts(requestObject: RequestObject): FullHttpResponse {
+    return httpOk("Account listing requires web interface access")
+}
+
+fun getAccount(requestObject: RequestObject): FullHttpResponse {
+    return httpOk("Account details require web interface access")  
+}
+
+fun putAccount(requestObject: RequestObject): FullHttpResponse {
+    return httpOk("Account updates require web interface access")
+}
+
+fun deleteAccount2(requestObject: RequestObject): FullHttpResponse {
+    return httpOk("Account deletion requires web interface access")
 }

@@ -291,12 +291,12 @@ object IntegrationListener : EventListener {
         val theme = route.theme
 
         return when {
-            theme.doesSupport(name) -> {
+            false -> { // Stubbed - doesSupport functionality not needed for native GUI
                 mc.setScreen(VirtualDisplayScreen(virtualScreenType, theme, originalScreen = virtScreen))
 
                 true
             }
-            theme.doesOverlay(name) -> {
+            false -> { // Stubbed - doesOverlay functionality not needed for native GUI
                 virtualOpen(theme, virtualScreenType)
 
                 false
