@@ -52,7 +52,6 @@ abstract class ComponentFactory {
             name,
             enabled,
             accessibleInteropGson.fromJson(alignment, Alignment::class.java),
-            tweaks ?: emptyArray(),
             values ?: emptyArray()
         )
 

@@ -57,12 +57,12 @@ object ComponentManager {
             return components
         }
 
-        val themeResult = ThemeManager.themes()
-        if (themeResult.isFailure) {
-            return emptyList()
+        // For native GUI, just return active theme's components if ID matches
+        return if (ThemeManager.activeTheme.metadata.id == id) {
+            ThemeManager.activeTheme.components
+        } else {
+            emptyList()
         }
-        val theme = themeResult.getOrNull()?.find { it.metadata.id == id } ?: return emptyList()
-        return theme.components
     }
 
     fun updateComponents() {

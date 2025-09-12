@@ -159,7 +159,7 @@ object ChunkRenderer {
 
         override fun chunkUpdate(x: Int, z: Int) {
             val chunkPos = ChunkPos(x, z)
-            val chunk = mc.world?.getChunk(chunkPos) ?: return
+            val chunk = mc.world?.getChunk(x, z) ?: return
 
             val chunkBordersToUpdate =
                 arrayOf(
@@ -202,10 +202,6 @@ object ChunkRenderer {
             val pos = ChunkPos(x, z)
             heightmapManager.unloadChunk(pos)
             textureAtlasManager.deallocate(pos)
-        }
-
-        override fun clearAllChunks() {
-            unloadEverything()
         }
 
         override fun clearAllChunks() {

@@ -57,10 +57,10 @@ class Theme private constructor(val origin: Origin, url: String): BaseApi(url.re
         REMOTE("remote")
     }
 
+    private var _metadata: ThemeMetadata? = null
     var metadata: ThemeMetadata
-        field: ThemeMetadata? = null
-        private set
-        get() = requireNotNull(field) { "metadata not loaded" }
+        private set(value) { _metadata = value }
+        get() = requireNotNull(_metadata) { "metadata not loaded" }
 
     private suspend fun loadMetadata() {
         try {
@@ -71,15 +71,15 @@ class Theme private constructor(val origin: Origin, url: String): BaseApi(url.re
         }
     }
 
+    private var _components: MutableList<Component>? = null
     var components: MutableList<Component>
-        field: MutableList<Component>? = null
-        private set
-        get() = requireNotNull(field) { "components not loaded" }
+        private set(value) { _components = value }
+        get() = requireNotNull(_components) { "components not loaded" }
 
+    private var _settings: Configurable? = null
     var settings: Configurable
-        field: Configurable? = null
-        private set
-        get() = requireNotNull(field) { "settings not loaded" }
+        private set(value) { _settings = value }
+        get() = requireNotNull(_settings) { "settings not loaded" }
 
     private suspend fun loadComponents() {
         components = metadata.components.mapNotNullTo(mutableListOf()) { name ->
@@ -141,52 +141,13 @@ class Theme private constructor(val origin: Origin, url: String): BaseApi(url.re
     var themeBackgroundTexture: ThemeBackground? = null
         private set
 
-    suspend fun compileShader(): Boolean {
-        if (themeBackgroundShader != null) {
-            return true
-        }
-
-        // todo: allow multiple backgrounds later on
-        val background = metadata.backgrounds.firstOrNull() ?: return false
-        if ("frag" !in background.types) {
-            // not supported
-            return false
-        }
-
-        val vertexShader = resourceToString("/resources/liquidbounce/shaders/vertex.vert")
-        val fragmentShader = runCatching {
-            get<String>("/backgrounds/${background.name.lowercase(Locale.US)}.frag")
-        }.getOrNull() ?: return false
-
-        themeBackgroundShader = ThemeBackground.shader(CanvasShader(
-            vertexShader,
-            fragmentShader,
-        ))
-        logger.info("Compiled shader background for theme ${metadata.name}")
+    fun compileShader(): Boolean {
+        // Stub implementation for native GUI - shaders not used
         return true
     }
 
-    suspend fun loadBackgroundImage(): Boolean {
-        if (themeBackgroundTexture != null) {
-            return true
-        }
-
-        // todo: allow multiple backgrounds later on
-        val background = metadata.backgrounds.firstOrNull() ?: return false
-        if ("png" !in background.types) {
-            // not supported
-            return false
-        }
-
-        val image = runCatching {
-            get<NativeImageBackedTexture>("/backgrounds/${background.name}.png")
-        }.getOrNull() ?: return false
-
-        val id = Identifier.of("liquidbounce",
-            "theme-bg-${metadata.name.lowercase(Locale.US)}")
-        themeBackgroundTexture = ThemeBackground.image(id)
-        mc.textureManager.registerTexture(id, image)
-        logger.info("Loaded background image for theme ${metadata.name}")
+    fun loadBackgroundImage(): Boolean {
+        // Stub implementation for native GUI - background images not used
         return true
     }
 
@@ -206,6 +167,10 @@ class Theme private constructor(val origin: Origin, url: String): BaseApi(url.re
     fun isScreenSupported(name: String?) = name != null && metadata.screens.contains(name)
 
     fun isOverlaySupported(name: String?) = name != null && metadata.overlays.contains(name)
+    
+    // Properties needed by ThemeManager
+    val name: String get() = metadata.name
+    val exists: Boolean get() = true // Stub - always exists for native GUI
     
     // Stubbed methods for native GUI compatibility
     fun doesSupport(name: String?) = false // Stub - no web support needed
